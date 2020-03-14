@@ -41,8 +41,8 @@ def run(args):
         start = args[2]
         end = args[3]
         return format(fetch_range(symbol=symbol, start=start, end=end))
-    except Exception as e:
-        print("Usage example: pull.py AAPL 01-15-2020 02-25-2020 \n")
+    except Exception:
+        print("\nUsage example: pull.py AAPL 01-15-2020 02-25-2020 \n")
         raise
 
 print(run(sys.argv))
