@@ -1,5 +1,7 @@
 import requests
 import datetime
+import pandas as pd
+import sys
 
 import settings
 
@@ -15,7 +17,7 @@ def fetch_range(symbol, start, end):
     return request(params)
 
 def date_to_timestamp(date_string):
-    date = datetime.datetime.strptime(date_string, "%d-%m-%Y")
+    date = datetime.datetime.strptime(date_string, "%m-%d-%Y")
     stamp = datetime.datetime.timestamp(date) 
     return int(stamp)
 
@@ -24,8 +26,23 @@ def request(params):
     print("DEBUG: Request: " + r.url)
     return r.json()
 
-one_month = datetime.timedelta(days=30)
-today = datetime.date.today()
+def format(results):
+    data = {
+        'low': results['l'],
+        'high': results['h'],
+        'volume': results['v'],
+        'timestamp': results['t']
+    }
+    return pd.DataFrame(data=data)
 
-results = fetch_range('AAPL', start = '01-01-2020', end = '01-02-2020')
-print(results)
+def run(args):
+    try:
+        symbol = args[1]
+        start = args[2]
+        end = args[3]
+        return format(fetch_range(symbol=symbol, start=start, end=end))
+    except Exception as e:
+        print("Usage example: pull.py AAPL 01-15-2020 02-25-2020 \n")
+        raise
+
+print(run(sys.argv))
