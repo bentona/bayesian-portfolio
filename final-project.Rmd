@@ -68,6 +68,78 @@ by_symbol
 ```
 
 ```{r}
-with_stuff <- rbindlist(by_symbol)
-View(with_stuff)
+with_returns <- rbindlist(by_symbol)
+View(with_returns)
 ```
+
+```{r}
+#colreturns <- 
+```
+
+```{r}
+
+symbol_list <- levels(as.factor(sample$symbol))
+
+symbol_stats <- data.frame(symbol = symbol_list)
+
+portfolio <- with_returns %>% 
+  group_by(symbol) %>% 
+  summarise(mean=mean(last_30_return, na.rm=TRUE), sd=sd(last_30_return, na.rm=TRUE))
+
+portfolio$weight <- 1/nrow(portfolio)
+portfolio$return <- portfolio$mean * portfolio$weight
+
+
+total_return <- sum(portfolio$return)
+(total_return + 1) ** 12
+portfolio
+```
+
+
+```{r}
+model_string <- textConnection("model{
+  # Likelihood
+  for(i in 1:n){
+    Y[i] ~ dnorm(mu[i], prec[i])
+  }
+  
+  # Prior
+  for (i in 1:n){
+    mu[i] ~ dnorm(mean[i], taumu)
+    sd[i] ~ dnorm(obsd[i], tauv)
+    prec[i] <- 1/sd[i]
+  }
+  
+  taumu ~ dgamma(0.1, 0.1)
+  tauv ~ dgamma(0.1, 0.1)
+  
+}")
+```
+
+
+```{r}
+timestamp()
+data <- list(
+  obsd=portfolio$sd,
+  Y=portfolio$mean,
+  mean=portfolio$mean,
+  n=nrow(portfolio)
+)
+
+model <- jags.model(model_string,data=data,n.chains=2)
+```
+
+
+```{r}
+timestamp()
+update(model, 20000)
+timestamp()
+params = c('mu')
+samples <- coda.samples(model, variable.names=params, thin=10, n.iter=50000)
+timestamp()
+```
+
+```{r}
+plot(model2_samples)
+```
+
