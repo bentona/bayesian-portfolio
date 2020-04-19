@@ -7,6 +7,8 @@ from random import sample
 
 import settings
 
+# only want symbols with ~5 yrs of data
+MIN_ROWS = 1250
 
 def fetch_range(symbol, start, end):
     params = {
@@ -31,15 +33,19 @@ def request(endpoint, params):
 
 def to_df(results, symbol):
     if results.get('s') == 'no_data':
+        print(f'skipping {symbol}, no data')
+        return pd.DataFrame()
+    if len(results.get('c')) < MIN_ROWS:
+        print(f'skipping {symbol}, low data')
         return pd.DataFrame()
     data = {
-        'low': results.get('l'),
-        'high': results.get('h'),
-        'open': results.get('o'),
-        'close': results.get('c'),
-        'volume': results.get('v'),
-        'timestamp': results.get('t'),
-        'datetime': pd.to_datetime(results.get('t'), unit='s'),
+        'low': results.get('l')[-MIN_ROWS:],
+        'high': results.get('h')[-MIN_ROWS:],
+        'open': results.get('o')[-MIN_ROWS:],
+        'close': results.get('c')[-MIN_ROWS:],
+        'volume': results.get('v')[-MIN_ROWS:],
+        'timestamp': results.get('t')[-MIN_ROWS:],
+        'datetime': pd.to_datetime(results.get('t')[-MIN_ROWS:], unit='s'),
         'symbol': symbol
     }
     return pd.DataFrame(data=data)
@@ -57,14 +63,12 @@ def run(args):
         print("\nUsage example: pull.py AAPL 01-15-2020 02-25-2020 \n")
         raise
 
-
 #import code; code.interact(local=dict(globals(), **locals()))
-
 
 def random_sample(n):
     start = '01-01-2000'
     end = '01-01-2020'
-    symbols = [ r['symbol'] for r in sample(all_symbols(), n) if not '-' in r['symbol'] ]
+    symbols = [ r['symbol'] for r in sample(all_symbols(), n) ]
     dfs = [ to_df(fetch_range(symbol=symbol, start=start, end=end), symbol=symbol) for symbol in symbols]
     return pd.concat(dfs)
 
