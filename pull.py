@@ -30,12 +30,16 @@ def request(endpoint, params):
     return r.json()
 
 def to_df(results, symbol):
+    if results.get('s') == 'no_data':
+        return pd.DataFrame()
     data = {
-        'low': results['l'],
-        'high': results['h'],
-        'volume': results['v'],
-        'timestamp': results['t'],
-        'datetime': pd.to_datetime(results['t'], unit='s'),
+        'low': results.get('l'),
+        'high': results.get('h'),
+        'open': results.get('o'),
+        'close': results.get('c'),
+        'volume': results.get('v'),
+        'timestamp': results.get('t'),
+        'datetime': pd.to_datetime(results.get('t'), unit='s'),
         'symbol': symbol
     }
     return pd.DataFrame(data=data)
@@ -60,8 +64,9 @@ def run(args):
 def random_sample(n):
     start = '01-01-2000'
     end = '01-01-2020'
-    symbols = [ r['symbol'] for r in sample(all_symbols(), n) ]
+    symbols = [ r['symbol'] for r in sample(all_symbols(), n) if not '-' in r['symbol'] ]
     dfs = [ to_df(fetch_range(symbol=symbol, start=start, end=end), symbol=symbol) for symbol in symbols]
     return pd.concat(dfs)
 
-random_sample(10).to_csv('sample.csv')
+
+random_sample(50).to_csv('sample.csv')
