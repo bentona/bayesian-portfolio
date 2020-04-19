@@ -16,7 +16,7 @@ library(data.table)
 
 
 ```{r}
-df <- read.csv("~/Personal/bayesian-portfolio/df.csv", stringsAsFactors = FALSE)
+df <- read.csv("~/Documents/bayes_portfolio/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
 df$date <- as.Date(df$datetime)
 
 justone <- df[df$symbol == 'PRTA',]
@@ -37,7 +37,7 @@ justone
 ```
 
 ```{r}
-sample <- read.csv("~/Personal/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
+sample <- read.csv("~/Documents/bayes_portfolio/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
 sample$date <- as.Date(sample$datetime)
 sample$symbol <- as.factor(sample$symbol)
 
@@ -65,6 +65,28 @@ add_return_pct <- function(x, y){
 
 by_symbol <- sample %>% group_by(symbol) %>% group_map(add_return_pct, keep = TRUE)
 by_symbol
+```
+
+```{r}
+# Create data table with 30 day stock returns by ticker name (includes date)
+
+varname <- as.character(by_symbol[[1]]$symbol[1])
+stock_returns <- data.table(date=by_symbol[[1]]$date, return=by_symbol[[1]]$last_30_return)
+setnames(stock_returns, "return",paste(varname))
+
+for (i in 2:length(by_symbol)){
+  varname <- as.character(by_symbol[[i]]$symbol[1])
+  dt <- data.table(date=by_symbol[[i]]$date, return= by_symbol[[i]]$last_30_return)
+  setnames(dt, "return",paste(varname))
+  
+stock_returns <- left_join(stock_returns,dt, by="date")
+}
+
+
+
+
+
+View(stock_returns)
 ```
 
 ```{r}
