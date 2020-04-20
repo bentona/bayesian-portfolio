@@ -1,0 +1,181 @@
+---
+title: "Bayesian Portfolio"
+author: "Chris Hooks"
+date: "4/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rjags)
+library(magrittr)
+library(tidyverse)
+library(data.table)
+library(LaplacesDemon)
+```
+
+```{r}
+sample <- read.csv("~/Documents/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
+sample$date <- as.Date(sample$datetime)
+sample$symbol <- as.factor(sample$symbol)
+
+justone <- sample[sample$symbol == 'PRTA',]
+justone <- justone[1:200,]
+
+
+
+add_return_pct <- function(x, y){
+  df <- x
+  df$close_30_ago = NA
+  df$date_30_ago = NA
+  
+  date_offset <- 22
+  for (i in (date_offset+1):nrow(df)){
+    # TODO - do fancy date parsing for more exact offsets
+    df$date_30_ago[i] <- as.character(df$date[i - date_offset])
+    df$close_30_ago[i] <- df$close[i - date_offset]
+  }
+  
+  df$last_30_return <- df$close / df$close_30_ago - 1
+  df$annualized_last_30_return = (df$last_30_return + 1) ^ (365/30) - 1
+  df
+}
+
+by_symbol <- sample %>% group_by(symbol) %>% group_map(add_return_pct, keep = TRUE)
+```
+
+```{r}
+# Create data table with 30 day stock returns by ticker name (includes date)
+
+varname <- as.character(by_symbol[[1]]$symbol[1])
+stock_returns <- data.table(date=by_symbol[[1]]$date, return=by_symbol[[1]]$last_30_return)
+setnames(stock_returns, "return",paste(varname))
+
+for (i in 2:length(by_symbol)){
+  varname <- as.character(by_symbol[[i]]$symbol[1])
+  dt <- data.table(date=by_symbol[[i]]$date, return= by_symbol[[i]]$last_30_return)
+  setnames(dt, "return",paste(varname))
+  
+stock_returns <- full_join(stock_returns,dt, by="date")
+}
+
+stock_returns <- na.omit(stock_returns)
+```
+
+```{r}
+# Some random parameters
+T <- nrow(stock_returns)
+N <- ncol(stock_returns[,drop(-1)])
+
+# Create covariance matrix
+covmat <- cov(stock_returns[,drop(-1)])
+
+# Create Random vector of weights
+w <- runif(N, 0,100)
+w <- w/sum(w)
+
+# Expected returns
+e_returns <- colMeans(stock_returns[,drop(-1)])
+
+# Expected portfolio return
+e_port_return <- sum(w*e_returns)
+
+# Portfolio Variance
+port_var <- t(w)%*%covmat%*%w
+
+# Sharpe ratio
+sharpe <- e_port_return / sqrt(port_var)
+sharpe
+
+# Degrees of freedom    IS THIS RIGHT???
+df <- sum(diag(covmat))/port_var
+
+# Scale matrix
+scale <- diag(N)
+
+# Prior for covariance matrix
+cov_prior <- rinvwishart(df,scale)
+```
+```{r}
+
+
+#### THIS IS ALL JUNK
+
+# JAGS Model for portfolio returns
+
+model_1_test_string <- textConnection("model{
+# Likelihood
+for (i in 1:T){
+  port_ret[i] ~ dnorm(mu[i],tau_p)
+  mu[i] <- 
+}
+
+Priors
+# Returns
+ret[] ~ dmnorm(e_returns[],Omega[,])
+
+# Variance
+Omega[,] ~ dwish(scale[,],df)
+sigma2_port <- t(w)%*%solve(Omega)%*%w
+tau_p <- 1/sigma2_port
+}")
+
+
+
+
+
+
+params <- c("sigma2_port", "ret", "port_ret")
+init <- list(ret = colMeans(stock_returns[,drop(-1)]))
+data <- list()
+model_1_test <- jags.model()
+```
+
+```{r}
+mat1 <- t(w)%*%covmat%*%w
+mat2 <- solve(covmat)
+
+1/t(w)%*%solve(mat2)%*%w
+1/mat1
+
+```
+
+
+ model_string <- textConnection("model{
+   # Likelihood
+    for(i in 1:n){for(j in 1:m){
+      Y[i,j] ~ dnorm(alpha[i,1]+alpha[i,2]*age[j],taue)
+    }}
+
+   # Random effects
+    for(i in 1:n){alpha[i,1:2] ~ dmnorm(mu[1:2],Omega[1:2,1:2])}
+
+   # Priors
+    for(j in 1:2){mu[j] ~ dnorm(0,0.0001)}
+    taue ~ dgamma(0.1,0.1)
+    Omega[1:2,1:2] ~ dwish(R[,],2.1)
+
+    R[1,1]<-1/2.1
+    R[1,2]<-0
+    R[2,1]<-0
+    R[2,2]<-1/2.1
+ }")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
