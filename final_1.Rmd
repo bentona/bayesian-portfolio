@@ -5,12 +5,11 @@ date: "4/19/2020"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=TRUE}
+
 ```
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
 library(rjags)
 library(magrittr)
 library(tidyverse)
@@ -82,6 +81,11 @@ w <- w/sum(w)
 e_returns <- colMeans(stock_returns[,drop(-1)])
 
 # Expected portfolio return
+port_ret <- rep(NA,T)
+for (i in 1:T){
+  port_ret[i] <- as.matrix(stock_returns[i,drop(-1)])%*%w
+}
+
 e_port_return <- sum(w*e_returns)
 
 # Portfolio Variance
@@ -101,69 +105,54 @@ scale <- diag(N)
 cov_prior <- rinvwishart(df,scale)
 ```
 ```{r}
+# Portfolio returns
 
-
-#### THIS IS ALL JUNK
-
-# JAGS Model for portfolio returns
-
-model_1_test_string <- textConnection("model{
-# Likelihood
-for (i in 1:T){
-  port_ret[i] ~ dnorm(mu[i],tau_p)
-  mu[i] <- 
+model_1_string <- textConnection("model{
+# Priors
+for (i in 1:N){
+  mu[i] ~ dnorm(0,0.01)
 }
+Omega[1:N,1:N] ~ dwish(scale[,],df)
+asset_returns ~ dmnorm(mu[], Omega[,])
+tau_p ~ dgamma(0.1,0.1)
+sigma_p <- 1/sqrt(tau_p)
 
-Priors
-# Returns
-ret[] ~ dmnorm(e_returns[],Omega[,])
+# Likelihood
+pred_ret[1,1:N] <- asset_returns
+pre_port_ret[1] <- inprod(stock_returns[1,1:N],w)
 
-# Variance
-Omega[,] ~ dwish(scale[,],df)
-sigma2_port <- t(w)%*%solve(Omega)%*%w
-tau_p <- 1/sigma2_port
+for (i in 2:T){
+  pred_ret[i,1:N] <- stock_returns[i-1,1:N]
+  stock_returns[i,1:N] ~ dmnorm(pred_ret[i,1:N], Omega[,])
+  pred_port_ret[i] <- inprod(stock_returns[i,1:N],w)
+  port_ret[i] ~ dnorm(pred_port_ret[i], tau_p)
+}
 }")
 
-
-
-
-
-
-params <- c("sigma2_port", "ret", "port_ret")
-init <- list(ret = colMeans(stock_returns[,drop(-1)]))
-data <- list()
-model_1_test <- jags.model()
+data <- list(stock_returns=stock_returns[,drop(-1)],  port_ret=port_ret, scale=scale, w=w,df=df, T=T, N=N)
+init <- list(asset_returns=e_returns)
+params <- c("pred_port_ret","sigma_p")
+model_1 <- jags.model(model_1_string, data=data, inits=init, n.chains = 3, quiet=TRUE)
 ```
 
 ```{r}
-mat1 <- t(w)%*%covmat%*%w
-mat2 <- solve(covmat)
+update(model_1, 5000)
+samp_1 <- coda.samples(model_1, variable.names = params, n.iter=10000)
+```
 
-1/t(w)%*%solve(mat2)%*%w
-1/mat1
-
+```{r}
+plot(samp_1)
 ```
 
 
- model_string <- textConnection("model{
-   # Likelihood
-    for(i in 1:n){for(j in 1:m){
-      Y[i,j] ~ dnorm(alpha[i,1]+alpha[i,2]*age[j],taue)
-    }}
 
-   # Random effects
-    for(i in 1:n){alpha[i,1:2] ~ dmnorm(mu[1:2],Omega[1:2,1:2])}
 
-   # Priors
-    for(j in 1:2){mu[j] ~ dnorm(0,0.0001)}
-    taue ~ dgamma(0.1,0.1)
-    Omega[1:2,1:2] ~ dwish(R[,],2.1)
 
-    R[1,1]<-1/2.1
-    R[1,2]<-0
-    R[2,1]<-0
-    R[2,2]<-1/2.1
- }")
+
+
+
+
+
 
 
 
