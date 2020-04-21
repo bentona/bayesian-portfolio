@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(rjags)
-library(tidyverse)
 library(data.table)
+library(tidyverse)
 library(LaplacesDemon)
 ```
 
@@ -110,7 +110,7 @@ Model 1
 model_1_string <- textConnection("model{
 # Priors
 for (i in 1:N){
-  mu[i] ~ dnorm(0,0.01)
+  mu[i] ~ dnorm(0,0.1)
 }
 Omega[1:N,1:N] ~ dwish(scale[,],df)
 asset_returns ~ dmnorm(mu[], Omega[,])
@@ -126,6 +126,7 @@ for (i in 2:T){
   stock_returns[i,1:N] ~ dmnorm(pred_ret[i,1:N], Omega[,])
   pred_port_ret[i] <- inprod(stock_returns[i,1:N],w)
   port_ret[i] ~ dnorm(pred_port_ret[i], tau_p)
+  
 }
 }")
 
@@ -156,21 +157,19 @@ Model 2
 model_2_string <- textConnection("model{
 # Priors
 for (i in 1:N){
-  mu[i] ~ dnorm(0,0.01)
+  mu[i] ~ dnorm(0,0.1)
 }
 Omega1[1:N,1:N] ~ dwish(scale[,],df)
-Omega2[1:N,1:N] ~ dwish(scale[,],df)
 
 asset_returns ~ dmnorm(mu[], Omega1[,])
-tau_p ~ dgamma(0.1,0.1)
-sigma_p <- 1/sqrt(tau_p)
+
 
 # Likelihood
 pred_ret[1,1:N] <- asset_returns
 
 for (i in 2:T){
   pred_ret[i,1:N] <- stock_returns[i-1,1:N]
-  stock_returns[i,1:N] ~ dmnorm(pred_ret[i,1:N], Omega2[,])
+  stock_returns[i,1:N] ~ dmnorm(pred_ret[i,1:N], Omega1[,])
 }
 }")
 
@@ -185,4 +184,12 @@ update(model_2, 5000)
 samp_2 <- coda.samples(model_2, variable.names = params, n.iter=10000)
 ```
 
+```{r}
+summary(samp_2)
+```
+
+```{r}
+test <- samp_2[[1]]
+View(test)
+```
 
