@@ -16,7 +16,7 @@ library(data.table)
 
 
 ```{r}
-df <- read.csv("~/Personal/bayesian-portfolio/df.csv", stringsAsFactors = FALSE)
+df <- read.csv("~/Documents/bayes_portfolio/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
 df$date <- as.Date(df$datetime)
 
 justone <- df[df$symbol == 'PRTA',]
@@ -37,7 +37,7 @@ justone
 ```
 
 ```{r}
-sample <- read.csv("~/Personal/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
+sample <- read.csv("~/Documents/bayes_portfolio/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
 sample$date <- as.Date(sample$datetime)
 sample$symbol <- as.factor(sample$symbol)
 
@@ -68,6 +68,100 @@ by_symbol
 ```
 
 ```{r}
-with_stuff <- rbindlist(by_symbol)
-View(with_stuff)
+# Create data table with 30 day stock returns by ticker name (includes date)
+
+varname <- as.character(by_symbol[[1]]$symbol[1])
+stock_returns <- data.table(date=by_symbol[[1]]$date, return=by_symbol[[1]]$last_30_return)
+setnames(stock_returns, "return",paste(varname))
+
+for (i in 2:length(by_symbol)){
+  varname <- as.character(by_symbol[[i]]$symbol[1])
+  dt <- data.table(date=by_symbol[[i]]$date, return= by_symbol[[i]]$last_30_return)
+  setnames(dt, "return",paste(varname))
+  
+stock_returns <- left_join(stock_returns,dt, by="date")
+}
+
+
+
+
+
+View(stock_returns)
 ```
+
+```{r}
+with_returns <- rbindlist(by_symbol)
+View(with_returns)
+```
+
+```{r}
+#colreturns <- 
+```
+
+```{r}
+
+symbol_list <- levels(as.factor(sample$symbol))
+
+symbol_stats <- data.frame(symbol = symbol_list)
+
+portfolio <- with_returns %>% 
+  group_by(symbol) %>% 
+  summarise(mean=mean(last_30_return, na.rm=TRUE), sd=sd(last_30_return, na.rm=TRUE))
+
+portfolio$weight <- 1/nrow(portfolio)
+portfolio$return <- portfolio$mean * portfolio$weight
+
+
+total_return <- sum(portfolio$return)
+(total_return + 1) ** 12
+portfolio
+```
+
+
+```{r}
+model_string <- textConnection("model{
+  # Likelihood
+  for(i in 1:n){
+    Y[i] ~ dnorm(mu[i], prec[i])
+  }
+  
+  # Prior
+  for (i in 1:n){
+    mu[i] ~ dnorm(mean[i], taumu)
+    sd[i] ~ dnorm(obsd[i], tauv)
+    prec[i] <- 1/sd[i]
+  }
+  
+  taumu ~ dgamma(0.1, 0.1)
+  tauv ~ dgamma(0.1, 0.1)
+  
+}")
+```
+
+
+```{r}
+timestamp()
+data <- list(
+  obsd=portfolio$sd,
+  Y=portfolio$mean,
+  mean=portfolio$mean,
+  n=nrow(portfolio)
+)
+
+model <- jags.model(model_string,data=data,n.chains=2)
+```
+
+
+```{r}
+timestamp()
+update(model, 20000)
+timestamp()
+params = c('mu')
+samples <- coda.samples(model, variable.names=params, thin=10, n.iter=50000)
+timestamp()
+```
+
+```{r}
+plot(model2_samples)
+```
+
