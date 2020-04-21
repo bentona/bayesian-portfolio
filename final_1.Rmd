@@ -4,9 +4,8 @@ author: "Chris Hooks"
 date: "4/19/2020"
 output: html_document
 ---
-
-```{r setup, include=TRUE}
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
@@ -131,7 +130,7 @@ for (i in 2:T){
 
 data <- list(stock_returns=stock_returns[,drop(-1)],  port_ret=port_ret, scale=scale, w=w,df=df, T=T, N=N)
 init <- list(asset_returns=e_returns)
-params <- c("pred_port_ret","sigma_p")
+params <- c("pred_port_ret","sigma_p", "pred_ret")
 model_1 <- jags.model(model_1_string, data=data, inits=init, n.chains = 3, quiet=TRUE)
 ```
 
@@ -143,7 +142,10 @@ samp_1 <- coda.samples(model_1, variable.names = params, n.iter=10000)
 ```{r}
 plot(samp_1)
 ```
-
+```{r}
+test <- samp_1[[1]]
+View(test)
+```
 
 
 
