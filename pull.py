@@ -73,4 +73,4 @@ def random_sample(n):
     return pd.concat(dfs)
 
 
-random_sample(50).to_csv('sample.csv')
+random_sample(10).to_csv('sample.csv')
