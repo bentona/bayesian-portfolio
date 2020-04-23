@@ -1,0 +1,51 @@
+---
+title: "notes"
+author: "benton anderson"
+date: "4/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The price for a stock i
+$$
+p_{it} = p_{it-1} + \epsilon_{it}; \epsilon_{it} \sim Norm(0, \sigma^2)
+$$
+
+So the return for a stock i at time t
+$$
+r_i = \frac{\gamma_{it}}{(y_{it-1})}; \gamma_{it} \sim Norm(0, \sigma^2)
+$$
+
+The price for portfolio of stocks is 
+$$
+P_{it} = P_{it-1} + \epsilon_{it}; \epsilon_{it} \sim Norm(0, \Sigma^2)
+$$
+
+```{r}
+S = 500
+x = c(2)
+returns = c(0)
+
+for (i in 2:S){
+  x[i] <- x[i-1] + rnorm(1, 0, .2)
+}
+
+
+
+plot(seq(S), x, type='l', ylab="price")
+
+```
+
+
+```{r}
+returns <- c(0)
+for (i in 2:length(x)){
+  returns[i] <- x[i]/x[i-1] - 1
+}
+
+plot(1:S, returns, type='l')
+
+```
