@@ -1,0 +1,112 @@
+---
+title: "Bayesian Portfolio"
+author: "Chris Hooks"
+date: "4/19/2020"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(rjags)
+library(data.table)
+library(tidyverse)
+library(LaplacesDemon)
+library(mvtnorm)
+```
+
+```{r}
+sample <- read.csv("./sample_6.csv", stringsAsFactors = FALSE)
+sample$date <- as.Date(sample$datetime)
+sample$symbol <- as.factor(sample$symbol)
+
+
+by_symbol <- sample %>% group_by(symbol) %>% group_map(function(x, y){x}, keep = TRUE)
+```
+
+
+```{r}
+
+# Daily returns
+N <- nrow(by_symbol[[1]])
+C <- length(by_symbol)
+
+daily_close <- matrix(NA, N,C+1)
+colnames(daily_close) <- c("date",levels(as.factor(sample$symbol)))
+daily_close[,"date"] <- by_symbol[[1]]$date
+for (i in 1:C){
+  daily_close[,(i+1)] <- by_symbol[[i]]$close
+}
+
+daily_return <- matrix(NA, N, C+1)
+colnames(daily_return) <- colnames(daily_close)
+daily_return[,1] <- daily_close[,1]
+
+for (j in 2:(C+1)){
+  for (i in 2:N){
+    daily_return[i,j] <- 100*(daily_close[i,j] / daily_close[i-1,j]-1)
+  }
+}
+
+daily_return <- daily_return[2:N,2:(C+1)]
+```
+
+```{r}
+set.seed(183)
+
+S <- 10000
+port_samples <- matrix(NA,S,3)
+
+T <- nrow(daily_return)
+
+# Initial Values
+mu1 <- colMeans(daily_return)
+cov1 <- cov(daily_return)
+
+w <- runif(C)
+w <- w/sum(w)
+```
+
+Model 1
+```{r}
+# Portfolio returns
+
+model_1_string <- textConnection("model{
+
+# Priors
+for (i in 1:Nstocks){
+  mu[i] ~ dnorm(0,0.1)
+}
+Omega[1:Nstocks,1:Nstocks] ~ dwish(scale[,],df)
+asset_returns ~ dmnorm(mu[], Omega[,])
+
+# Likelihood
+
+for (i in 2:T){
+  stock_returns[i,1:Nstocks] ~ dmnorm(mu, Omega[,])
+}
+}")
+
+Nstocks <- ncol(daily_return)
+scale <- diag(Nstocks)
+
+data <- list(stock_returns=daily_return, scale=scale, w=w,df=N-1, T=T, Nstocks=Nstocks)
+init <- list(mu=mu1) # something like? Omega=solve(cov1)) https://sourceforge.net/p/mcmc-jags/discussion/610037/thread/eab372de/
+params <- c("Omega","mu")
+model_1 <- jags.model(model_1_string, data=data, inits=init, n.chains = 2, quiet=TRUE)
+```
+
+```{r}
+update(model_1, 5000)
+samp_1 <- coda.samples(model_1, variable.names = params, n.iter=10000)
+```
+
+```{r}
+plot(samp_1)
+```
+```{r}
+test <- samp_1[[1]]
+View(test)
+```
+
