@@ -13,6 +13,7 @@ library(rjags)
 library(data.table)
 library(tidyverse)
 library(LaplacesDemon)
+library(mvtnorm)
 ```
 
 ```{r}
@@ -63,6 +64,8 @@ stock_returns <- na.omit(stock_returns)
 ```
 
 ```{r}
+#### THIS IS NOT BEING USED RIGHT NOW###############################################
+
 # Some random parameters
 T <- nrow(stock_returns)
 N <- ncol(stock_returns[,drop(-1)])
@@ -101,6 +104,248 @@ scale <- diag(N)
 # Prior for covariance matrix
 cov_prior <- rinvwishart(df,scale)
 ```
+
+
+
+```{r}
+############################## GIBBS SAMPLERS BELOW USE DAILY RETURNS######################################
+
+# Daily returns
+N <- nrow(by_symbol[[1]])
+C <- length(by_symbol)
+
+daily_close <- matrix(NA, N,C+1)
+colnames(daily_close) <- c("date",levels(as.factor(sample$symbol)))
+daily_close[,"date"] <- by_symbol[[1]]$date
+for (i in 1:C){
+  daily_close[,(i+1)] <- by_symbol[[i]]$close
+}
+
+daily_return <- matrix(NA, N, C+1)
+colnames(daily_return) <- colnames(daily_close)
+daily_return[,1] <- daily_close[,1]
+
+for (j in 2:(C+1)){
+  for (i in 2:N){
+    daily_return[i,j] <- 100*(daily_close[i,j] / daily_close[i-1,j]-1)
+  }
+}
+
+daily_return <- daily_return[2:N,2:(C+1)]
+```
+
+```{r}
+# Gibbs sampler for portfolio ****Fixed Weights**** This is a test code chunk
+set.seed(183)
+
+S <- 10000
+port_samples <- matrix(NA,S,3)
+
+n <- nrow(daily_return)
+
+# Initial Values
+mu1 <- colMeans(daily_return)
+cov1 <- cov(daily_return)
+port_ret1 <- rowSums(daily_return*w)
+w <- runif(C)
+w <- w/sum(w)
+mu0 <- mean(port_ret1)
+s2 <- t(w)%*%cov1%*%w
+
+# Priors
+tau_p <- 10
+a <- 0.01
+b <- 0.01
+
+
+V <- 1/tau_p
+
+
+for (s in 1:S){
+  P <- n/s2 + V
+  M <- sum(port_ret1)/s2 + mu0*V
+  mu <- rnorm(1,M/P, 1/sqrt(P))
+  
+  A <- n/2 + a
+  B <- sum((Y-mu)^2)/2 + b
+  s2 <- 1/rgamma(1,A,B)
+  
+  sharpe <- mu/sqrt(s2)
+  
+  port_samples[s,] <- c(mu, s2, sharpe)
+}
+
+# Plot trace
+for (i in 1:ncol(port_samples)){
+  plot(1:S, port_samples[,i], xlab = "Iterations", ylab = colnames(port_samples[,i]), type = "l", 
+       ylim = c(min(port_samples[,i])-0.2*abs(min(port_samples[,i])),
+                max(port_samples[,i])+0.2*abs(max(port_samples[,i]))))
+}
+
+# Plot density
+for (i in 1:ncol(port_samples)){
+  plot(density(port_samples[,i]), xlab = colnames(port_samples[,i]), ylab = "Density")
+}
+
+colMeans(port_samples)
+
+```
+
+```{r}
+# Plot trace
+for (i in 1:ncol(port_samples)){
+  plot(1:S, port_samples[,i], xlab = "Iterations", ylab = colnames(port_samples[,i]), type = "l", 
+       ylim = c(min(port_samples[,i])-0.2*abs(min(port_samples[,i])),
+                max(port_samples[,i])+0.2*abs(max(port_samples[,i]))))
+}
+
+# Plot density
+for (i in 1:ncol(port_samples)){
+  plot(density(port_samples[,i]), xlab = colnames(port_samples[,i]), ylab = "Density")
+}
+
+colMeans(port_samples)
+
+```
+
+
+
+```{r}
+##########################  WARNING  ####################################################
+
+##################### THIS OUTPUTS A HUGE MATRIX, POSSILBE SEND TO LIST????? ###############################
+
+
+
+######### TO DO ##########################
+ # Can you fix the weights to iterate over a gradient? Right now it is just random selection.
+# Weights must be w >=0 for each stock, and should maximize the value "sharpe" below
+
+# Gibbs sampler for portfolio Varying Weights
+set.seed(876)
+n <- nrow(daily_return)
+
+# Create a place for sample data
+portfolios <- list()
+N_port <- 10000
+
+S <- 10000
+port_samples <- matrix(NA,S*N_port,4)
+colnames(port_samples) <- c("ret","s2","sharpe","port")
+
+# Initial Values
+mu1 <- colMeans(daily_return)
+cov1 <- cov(daily_return)
+port_ret1 <- rowSums(daily_return*w)
+w <- runif(C,0,1000)
+w <- w/sum(w)
+mu0 <- mean(port_ret1)
+s2 <- t(w)%*%cov1%*%w
+
+# Priors
+tau_p <- 10
+a <- 0.01
+b <- 0.01
+
+
+V <- 1/tau_p
+
+
+
+for (i in 1:N_port){
+  for (s in 1:S){
+    P <- n/s2 + V
+    M <- sum(port_ret1)/s2 + mu0*V
+    mu <- rnorm(1,M/P, 1/sqrt(P))
+    
+    A <- n/2 + a
+    B <- sum((Y-mu)^2)/2 + b
+    s2 <- 1/rgamma(1,A,B)
+    
+    sharpe <- mu/sqrt(s2)
+    
+    port_samples[(s+((i-1)*10000)),] <- c(mu, s2, sharpe,i)
+    
+  }
+  portfolios[[i]] <- list(port=i,weights=w)
+  w <- runif(C,0,1000)
+  w <- w/sum(w)
+}
+
+```
+
+
+```{r}
+##################### THIS IS JUNK ############################################## 
+
+# Predicting  stock returns with linear model (for initial values)
+lm_model <- list()
+for (i in 1:C){
+  X <- daily_return[1:(N-1),i]
+  Y <- daily_return[2:N,i]
+  lm_model[[i]] <- lm(Y~X)
+}
+ncol(daily_return)
+var(lm_model[[1]]$residuals)
+```
+
+```{r}
+
+# Random walk on stocks *univariate
+
+### CAN YOU EXPAND THIS TO MULTIVARIATE AND MAKE IT MORE EFFICIENT???
+S <- 10000
+ret_samples <- matrix(NA,S,2)
+colnames(ret_samples) <- c("E_Y", "s2")
+N <- nrow(daily_return)
+
+stocks_rw <- list()
+
+for (i in 1:C){
+  # Data for individual stock
+  X <- daily_return[1:(N-1),i]
+  Y <- daily_return[2:N,i]
+  n <- length(Y)
+  
+  # Initial values
+  mu <- mean(Y)
+  s2 <- var(Y)
+  
+  # Priors
+  mu0 <- 0
+  tau <- 10
+  a <- 0.01
+  b <- 0.01
+  V <- 1/tau
+  
+  for (s in 1:S){
+    P <- n/s2 + V
+    M <- sum(Y-X)/s2 + mu0*V
+    mu <- rnorm(1,M/P,1/sqrt(P))
+    
+    A <- n/2 + a
+    B <- sum((Y-mu)^2)/2 + b
+    s2 <- 1/rgamma(1,A,B)
+    
+    ret_samples[s,] <- c(mu, s2)
+  }
+  stocks_rw[[i]] <- ret_samples
+  ret_samples <- matrix(NA,S,2)
+  colnames(ret_samples) <- c("E_Y", "s2")
+}
+
+```
+
+```{r}
+plot(1:S,stocks_rw[[2]][,1], type = "l")
+colMeans(stocks_rw[[1]])
+```
+
+
+
+
+
+
 
 
 Model 1
