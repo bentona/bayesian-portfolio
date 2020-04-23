@@ -146,9 +146,9 @@ n <- nrow(daily_return)
 # Initial Values
 mu1 <- colMeans(daily_return)
 cov1 <- cov(daily_return)
-port_ret1 <- rowSums(daily_return*w)
 w <- runif(C)
 w <- w/sum(w)
+port_ret1 <- rowSums(daily_return*w)
 mu0 <- mean(port_ret1)
 s2 <- t(w)%*%cov1%*%w
 
@@ -227,7 +227,7 @@ n <- nrow(daily_return)
 
 # Create a place for sample data
 portfolios <- list()
-N_port <- 10000
+N_port <- 10
 
 S <- 10000
 port_samples <- matrix(NA,S*N_port,4)
@@ -236,11 +236,9 @@ colnames(port_samples) <- c("ret","s2","sharpe","port")
 # Initial Values
 mu1 <- colMeans(daily_return)
 cov1 <- cov(daily_return)
-port_ret1 <- rowSums(daily_return*w)
 w <- runif(C,0,1000)
 w <- w/sum(w)
-mu0 <- mean(port_ret1)
-s2 <- t(w)%*%cov1%*%w
+
 
 # Priors
 tau_p <- 10
@@ -270,24 +268,14 @@ for (i in 1:N_port){
   portfolios[[i]] <- list(port=i,weights=w)
   w <- runif(C,0,1000)
   w <- w/sum(w)
+  port_ret1 <- rowSums(daily_return*w)
+  mu0 <- mean(port_ret1)
+  s2 <- t(w)%*%cov1%*%w
 }
 
 ```
 
 
-```{r}
-##################### THIS IS JUNK ############################################## 
-
-# Predicting  stock returns with linear model (for initial values)
-lm_model <- list()
-for (i in 1:C){
-  X <- daily_return[1:(N-1),i]
-  Y <- daily_return[2:N,i]
-  lm_model[[i]] <- lm(Y~X)
-}
-ncol(daily_return)
-var(lm_model[[1]]$residuals)
-```
 
 ```{r}
 
@@ -301,7 +289,7 @@ N <- nrow(daily_return)
 
 stocks_rw <- list()
 
-for (i in 1:C){
+for (i in 1:2){
   # Data for individual stock
   X <- daily_return[1:(N-1),i]
   Y <- daily_return[2:N,i]
@@ -320,7 +308,7 @@ for (i in 1:C){
   
   for (s in 1:S){
     P <- n/s2 + V
-    M <- sum(Y-X)/s2 + mu0*V
+    M <- sum(Y)/s2 + mu0*V
     mu <- rnorm(1,M/P,1/sqrt(P))
     
     A <- n/2 + a
@@ -337,12 +325,80 @@ for (i in 1:C){
 ```
 
 ```{r}
-plot(1:S,stocks_rw[[2]][,1], type = "l")
+plot(1:S,stocks_rw[[1]][,1], type = "l")
 colMeans(stocks_rw[[1]])
 ```
 
+```{r}
+
+# Random walk on stocks *MULTIVARIATE
 
 
+S <- 10000
+N <- nrow(daily_return)
+C <- ncol(daily_return)
+
+stocks_rw <- list()
+
+
+# Data 
+X <- daily_return[1:(N-1),]
+Y <- daily_return[2:N,]
+n <- nrow(Y)
+
+# Initial values
+mu <- colMeans(Y-X)
+covmat <- cov(Y-X)
+
+# Priors
+mu0 <- rep(0,C)
+tau <- 10
+V <- diag(C)/tau
+
+P_Y <- matrix(NA,n,C)
+
+
+for(s in 1:S){
+  P <- (1/n)*covmat + V
+
+  for (t in 1:n){
+    P_Y[t,] <- rmvnorm(1,X[t,],P)
+  }
+  
+  epsilon <- Y - P_Y
+  colnames(epsilon) <- colnames(X)
+  covmat2 <- cov(epsilon)
+  
+  covmat <- rinvwishart(n-C, covmat2)
+
+  stocks_rw[[s]] <- list(P_Y = P_Y, covmat = covmat)
+}
+
+#View(P_Y)
+```
+
+```{r}
+samples <- data.table()
+
+for(i in length(stocks_rw)){
+  errors <- Y-stocks_rw[[i]]$P_Y
+  out <- cbind(stocks_rw[[i]]$P_Y, errors)
+  samples <- rbind(samples, out)
+}
+
+colMeans(samples)
+
+#View(samples)
+```
+
+```{r}
+samples <- as.data.frame(samples)
+N <- nrow(samples)
+for (i in 1:ncol(samples)){
+  plot(1:N, samples[,i], type = 'l')
+  plot(density(samples[,i]))
+}
+```
 
 
 
@@ -399,6 +455,8 @@ Model 2
 ```{r}
 # Portfolio returns
 
+
+
 model_2_string <- textConnection("model{
 # Priors
 for (i in 1:N){
@@ -437,4 +495,32 @@ summary(samp_2)
 test <- samp_2[[1]]
 View(test)
 ```
+
+
+```{r}
+stockA <- daily_return[,2]
+N <- length(stockA)
+plot(1:N, stockA, type="l")
+
+mean(stockA)
+
+PriceA <- by_symbol[[1]]$close
+
+testA <- lm(PriceA[2:N]~PriceA[1:N-1])
+testA
+
+test2A <- lm(stockA[2:N]~stockA[1:N-1])
+test2A
+
+plot(PriceA[2:N], PriceA[1:N-1])
+cor(PriceA[2:N], PriceA[1:N-1])
+
+plot(stockA[2:N], stockA[1:N-1])
+cor(stockA[2:N],stockA[1:N-1])
+```
+
+
+
+
+
 
