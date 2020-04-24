@@ -131,7 +131,18 @@ sharpe <- function(w){
   E/sqrt(port_var)
 } 
 
-optimal <- optim(w, sharpe)$par
+optimization <- optim(
+  w, # initial guess
+  sharpe, # fn to optimize
+  method = c("L-BFGS-B"), # only l-bfgs-b and brent support bounding
+  control=list(
+    maxit=10000, # default iters isn't enough to converge
+    fnscale=-1 # We want to maximize, not minimize
+  ),
+  lower=0 # lower bound for each var
+)
+
+optimal <- optimization$par
 
 normalized_optimal <- optimal/sum(optimal)
 
