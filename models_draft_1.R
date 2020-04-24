@@ -10,7 +10,7 @@
 
 # SET WORKING DIRECTORY
 
-#setwd("~/Documents/bayesian-portfolio/")
+setwd("~/Documents/bayesian-portfolio/")
 
 
 #########################################################################################################################
@@ -45,6 +45,8 @@ V <- diag(C)/tau
 
 P_Y <- matrix(NA,n,C)
 
+avg_errors <- matrix(S,n,C)
+
 
 for(s in 1:S){
   P <- (1/n)*covmat + V
@@ -54,6 +56,7 @@ for(s in 1:S){
   }
   
   epsilon <- Y - P_Y
+  avg_errors <- colMeans(epsilon)
   colnames(epsilon) <- colnames(X)
   covmat2 <- cov(epsilon)
   
@@ -61,3 +64,13 @@ for(s in 1:S){
   
   stocks_rw[[s]] <- list(P_Y = P_Y, covmat = covmat)
 }
+
+
+
+
+
+
+
+
+
+
