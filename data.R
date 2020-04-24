@@ -27,13 +27,9 @@ if(clear.data=="Y"){
 
 
 # Read in and transform the data
-sample <- read.csv("./sample.csv", stringsAsFactors = FALSE)
+sample <- read.csv("./sample_6.csv", stringsAsFactors = FALSE)
 sample$date <- as.Date(sample$datetime)
 sample$symbol <- as.factor(sample$symbol)
-
-justone <- sample[sample$symbol == 'PRTA',]
-justone <- justone[1:200,]
-
 
 add_return_pct <- function(x, y){
   df <- x

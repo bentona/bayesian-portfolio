@@ -1,58 +1,7 @@
----
-title: "Bayesian Portfolio"
-author: "Chris Hooks"
-date: "4/19/2020"
-output: html_document
----
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r}
-library(rjags)
-library(data.table)
-library(tidyverse)
-library(LaplacesDemon)
-library(mvtnorm)
-```
-
-```{r}
-df <- read.csv("./sample_6.csv", stringsAsFactors = FALSE)
-df$date <- as.Date(df$datetime)
-df$symbol <- as.factor(df$symbol)
+source('./data.R')
 
 
-by_symbol <- df %>% group_by(symbol) %>% group_map(function(x, y){x}, keep = TRUE)
-```
-
-
-```{r}
-
-# Daily returns
-N <- nrow(by_symbol[[1]])
-C <- length(by_symbol)
-
-daily_close <- matrix(NA, N,C+1)
-colnames(daily_close) <- c("date",levels(as.factor(df$symbol)))
-daily_close[,"date"] <- by_symbol[[1]]$date
-for (i in 1:C){
-  daily_close[,(i+1)] <- by_symbol[[i]]$close
-}
-
-daily_return <- matrix(NA, N, C+1)
-colnames(daily_return) <- colnames(daily_close)
-daily_return[,1] <- daily_close[,1]
-
-for (j in 2:(C+1)){
-  for (i in 2:N){
-    daily_return[i,j] <- 100*(daily_close[i,j] / daily_close[i-1,j]-1)
-  }
-}
-
-daily_return <- daily_return[2:N,2:(C+1)]
-```
-
-```{r}
+#setwd("/Users/benton/Personal/bayesian-portfolio")
 set.seed(183)
 
 S <- 10000
@@ -63,27 +12,23 @@ T <- nrow(daily_return)
 # Initial Values
 mu1 <- colMeans(daily_return)
 cov1 <- cov(daily_return)
-```
 
-Model 1
-```{r}
 # Portfolio returns
 
 model_1_string <- textConnection("model{
-
-# Priors
-
-for (i in 1:Nstocks){
-  mu[i] ~ dnorm(0,0.1)
-}
-
-Omega[1:Nstocks,1:Nstocks] ~ dwish(scale[,],df)
-
-# Likelihood
-
-for (i in 2:T){
-  stock_returns[i,1:Nstocks] ~ dmnorm(mu, Omega[,])
-}
+  # Priors
+  
+  for (i in 1:Nstocks){
+    mu[i] ~ dnorm(0,0.1)
+  }
+  
+  Omega[1:Nstocks,1:Nstocks] ~ dwish(scale[,],df)
+  
+  # Likelihood
+  
+  for (i in 2:T){
+    stock_returns[i,1:Nstocks] ~ dmnorm(mu, Omega[,])
+  }
 }")
 
 Nstocks <- ncol(daily_return)
@@ -93,26 +38,16 @@ data <- list(stock_returns=daily_return, scale=scale, df=N-1, T=T, Nstocks=Nstoc
 init <- list(mu=mu1) # something like? Omega=solve(cov1)) https://sourceforge.net/p/mcmc-jags/discussion/610037/thread/eab372de/
 params <- c("Omega","mu")
 model_1 <- jags.model(model_1_string, data=data, inits=init, n.chains = 2, quiet=TRUE)
-```
 
-```{r}
 update(model_1, 15000)
 samp_1 <- coda.samples(model_1, variable.names = params, n.iter=10000)
-```
 
-```{r}
-plot(samp_1)
-```
-```{r}
+
 samples <- cbind(samp_1[[1]])
 Omega_samples <- samples[,1:Nstocks^2]
 mu_start <- Nstocks^2 + 1
 mu_end <- mu_start + Nstocks - 1
 mu_samples <- samples[,mu_start:mu_end]
-```
-
-
-```{r}
 
 sample_index <- sample(1:nrow(Omega_samples), 1)
 covmat <- matrix(Omega_samples[sample_index,], nrow=Nstocks, ncol=Nstocks)
@@ -147,5 +82,4 @@ optimal <- optimization$par
 normalized_optimal <- optimal/sum(optimal)
 
 normalized_optimal
-```
 
