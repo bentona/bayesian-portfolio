@@ -1,5 +1,8 @@
 source('./data.R')
 
+sample <- load_data()
+by_symbol <- group_by_symbol(sample)
+daily_return <- daily_returns(by_symbol)
 
 #setwd("/Users/benton/Personal/bayesian-portfolio")
 set.seed(183)
