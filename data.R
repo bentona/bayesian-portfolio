@@ -28,7 +28,7 @@ if(clear.data=="Y"){
 
 # Read in and transform the data
 load_data <- function(filename="sample_6.csv"){
-  sample <- read.csv("./sample_6.csv", stringsAsFactors = FALSE)
+  sample <- read.csv(filename, stringsAsFactors = FALSE)
   sample$date <- as.Date(sample$datetime)
   sample$symbol <- as.factor(sample$symbol)
   sample
