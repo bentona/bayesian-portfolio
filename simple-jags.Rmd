@@ -106,6 +106,9 @@ plot(samp_1)
 ```{r}
 samples <- cbind(samp_1[[1]])
 Omega_samples <- samples[,1:Nstocks^2]
+mu_start <- Nstocks^2 + 1
+mu_end <- mu_start + Nstocks - 1
+mu_samples <- samples[,mu_start:mu_end]
 ```
 
 
@@ -113,6 +116,8 @@ Omega_samples <- samples[,1:Nstocks^2]
 
 sample_index <- sample(1:nrow(Omega_samples), 1)
 covmat <- matrix(Omega_samples[sample_index,], nrow=Nstocks, ncol=Nstocks)
+
+mu <- mu_samples[sample_index]
 
 draw <- rmvnorm(n=1, mean=mu1, sigma=covmat)
 
