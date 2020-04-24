@@ -16,18 +16,18 @@ library(mvtnorm)
 
 # Clear environment
 
-clear.data <- readline(prompt = "Would you like to REMOVE ALL ITEMS FROM GLOBAL ENVIRONMENT (Y/N)? :")
+#clear.data <- readline(prompt = "Would you like to REMOVE ALL ITEMS FROM GLOBAL ENVIRONMENT (Y/N)? :")
 
-if(clear.data=="Y"){
-  rm(list = ls())
-}
+#if(clear.data=="Y"){
+ # rm(list = ls())
+#}
 
 
 #############################################################################################################
 
 
 # Read in and transform the data
-sample <- read.csv("./sample.csv", stringsAsFactors = FALSE)
+sample <- read.csv("./sample_6.csv", stringsAsFactors = FALSE)
 sample$date <- as.Date(sample$datetime)
 sample$symbol <- as.factor(sample$symbol)
 
