@@ -20,6 +20,10 @@ setwd("~/Documents/bayesian-portfolio/")
 
 source('./data.R')
 
+sample <- load_data()
+by_symbol <- group_by_symbol(sample)
+daily_return <- daily_returns(by_symbol)
+
 
 # Multivariate Random walk for model for fitting daily stock returns.
 S <- 10000

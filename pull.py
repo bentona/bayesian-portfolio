@@ -7,8 +7,11 @@ from random import sample
 
 import settings
 
-# only want symbols with ~5 yrs of data
-MIN_ROWS = 1250
+# for training we only want symbols with ~5 yrs of data
+#MIN_ROWS = 1250
+
+# for testing we don't care
+MIN_ROWS = 0
 
 def fetch_range(symbol, start, end):
     params = {
@@ -53,24 +56,30 @@ def to_df(results, symbol):
 def all_symbols():
     return request('stock/symbol', {'exchange': 'US'})
 
-def run(args):
-    try:
-        symbol = args[1]
-        start = args[2]
-        end = args[3]
-        return to_df(fetch_range(symbol=symbol, start=start, end=end), symbol=symbol)
-    except Exception:
-        print("\nUsage example: pull.py AAPL 01-15-2020 02-25-2020 \n")
-        raise
+def fetch_range_for_symbols(start, end, symbols):
+    dfs = [ to_df(fetch_range(symbol=symbol, start=start, end=end), symbol=symbol) for symbol in symbols]
+    return pd.concat(dfs)
 
-#import code; code.interact(local=dict(globals(), **locals()))
+
 
 def random_sample(n):
     start = '01-01-2000'
     end = '01-01-2020'
     symbols = [ r['symbol'] for r in sample(all_symbols(), n) ]
-    dfs = [ to_df(fetch_range(symbol=symbol, start=start, end=end), symbol=symbol) for symbol in symbols]
-    return pd.concat(dfs)
+    fetch_range_for_symbols(start, end, symbols)
+
+def run(args):
+    try:
+        start = args[1]
+        end = args[2]
+        symbols = args[3:]
+        return fetch_range_for_symbols(start, end, symbols)
+    except Exception:
+        print("\nUsage example: pull.py 01-15-2020 02-25-2020 AAPL TSLA\n")
+        raise
 
 
-random_sample(10).to_csv('sample.csv')
+
+#random_sample(10).to_csv('sample.csv')
+
+run(sys.argv).to_csv('test.csv')
