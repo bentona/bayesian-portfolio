@@ -18,7 +18,7 @@ setwd("~/Documents/bayesian-portfolio/")
 
 # SOURCE DATA
 
-source('./data.R')
+#source('./data_1.R')
 
 
 # Multivariate Random walk for model for fitting daily stock returns.
