@@ -1,6 +1,7 @@
 source('./data.R')
+source('./optimize_test.R')
 
-sample <- load_data()
+sample <- load_data('./sample_11.csv')
 by_symbol <- group_by_symbol(sample)
 daily_return <- daily_returns(by_symbol)
 
@@ -53,52 +54,48 @@ mu_start <- Nstocks^2 + 1
 mu_end <- mu_start + Nstocks - 1
 mu_samples <- samples[,mu_start:mu_end]
 
-sample_index <- sample(1:nrow(Omega_samples), 1)
-covmat <- matrix(Omega_samples[sample_index,], nrow=Nstocks, ncol=Nstocks)
+covmat <- matrix(colMeans(Omega_samples), nrow = Nstocks, ncol = Nstocks)
+mu <- colMeans(mu_samples)
 
-mu <- mu_samples[sample_index]
-
-draw <- rmvnorm(n=1, mean=mu1, sigma=covmat)
-
-w <- runif(Nstocks)
-w <- w/sum(w)
+random_weights <- runif(Nstocks)
+random_weights <- random_weights/sum(random_weights)
 
 
-sharpe <- function(w){
-  E <- draw %*% w
-  port_var <- t(w) %*% covmat %*% w
-  E/sqrt(port_var)
-} 
+optimal <- optimize(mu, covmat, random_weights)
+portfolio_to_test <- optimal$par
 
-optimization <- optim(
-  w, # initial guess
-  sharpe, # fn to optimize
-  method = c("L-BFGS-B"), # only l-bfgs-b supports bounding for multi-dimensional optim
-  control=list(
-    maxit=10000, # default iters isn't enough to converge
-    fnscale=-1 # We want to maximize, not minimize
-  ),
-  lower=0 # lower bound for each var
-)
-
-optimal <- optimization$par
-
-normalized_optimal <- optimal/sum(optimal)
-
-normalized_optimal
+normalized_portfolio <- portfolio_to_test/sum(portfolio_to_test)
 
 
-test_sample <- load_data(filename='./test.csv')
-test_by_symbol <- group_by_symbol(test_sample)
-test_daily_return <- daily_returns(test_by_symbol)
+
+test_sample <- load_data(filename='./test_11.csv')
+
+stock_values <- test_forward(normalized_portfolio, test_sample)
+
+port_return <- sum(stock_values[nrow(stock_values),])
 
 
-stock_values <- matrix(ncol=Nstocks, nrow=nrow(test_daily_return))
-stock_values[1,] <- normalized_optimal
-for (i in 2:nrow(stock_values)){
-  stock_values[i,] <- (test_daily_return[i,]/100 + 1) * stock_values[i-1,]
+
+market_only_port <- matrix(c(1.0), nrow=1, ncol=1)
+market_forward <- load_data(filename='./test_market.csv')
+market_values <- test_forward(market_only_port, market_forward)
+
+
+plot_perf <- function(stock_values){
+  returns <- rowSums(stock_values) #t(t(stock_values)/stock_values[1,])
+  market_returns <- market_values
+  
+  plot(NA, xlim = c(0, length(returns)), ylim = c(.5,1.5),
+       main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
+  lines(seq(1, length(returns)), returns, col=1)
+  lines(seq(1, length(returns)), market_returns, col=2)
+  
+ # legend("topright", line_labels[2:k], col = 2:k, lty = 1, bty="n", cex = 0.6)
+  
 }
 
-sum(stock_values[nrow(stock_values),])
+plot_perf
+
+
 
 

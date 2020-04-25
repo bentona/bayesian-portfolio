@@ -89,8 +89,10 @@ daily_returns <- function(by_symbol){
   N <- nrow(by_symbol[[1]])
   C <- length(by_symbol)
   
+  levs <- levels(map(by_symbol, function(c){c$symbol})[[1]])
+  
   daily_close <- matrix(NA, N,C+1)
-  colnames(daily_close) <- c("date",levels(as.factor(sample$symbol)))
+  colnames(daily_close) <- c("date",levs)
   daily_close[,"date"] <- by_symbol[[1]]$date
   for (i in 1:C){
     daily_close[,(i+1)] <- by_symbol[[i]]$close
@@ -106,7 +108,7 @@ daily_returns <- function(by_symbol){
     }
   }
   
-  daily_return[2:N,2:(C+1)]
+  daily_return[2:N,2:(C+1),drop=FALSE] # Preserve matrix format even if C=1
 }
 
 

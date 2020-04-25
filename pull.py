@@ -10,8 +10,8 @@ import settings
 # for training we only want symbols with ~5 yrs of data
 #MIN_ROWS = 1250
 
-# for testing we don't care
-MIN_ROWS = 0
+# for testing we don't care, just want to make sure the ticker didn't change
+MIN_ROWS = 1
 
 def fetch_range(symbol, start, end):
     params = {
@@ -66,7 +66,7 @@ def random_sample(n):
     start = '01-01-2000'
     end = '01-01-2020'
     symbols = [ r['symbol'] for r in sample(all_symbols(), n) ]
-    fetch_range_for_symbols(start, end, symbols)
+    return fetch_range_for_symbols(start, end, symbols)
 
 def run(args):
     try:
@@ -80,6 +80,6 @@ def run(args):
 
 
 
-#random_sample(10).to_csv('sample.csv')
+#random_sample(15).to_csv('sample_new.csv')
 
-run(sys.argv).to_csv('test.csv')
+#run(sys.argv).to_csv('test_new.csv')
