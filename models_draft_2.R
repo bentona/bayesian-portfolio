@@ -12,6 +12,9 @@
 
 setwd("~/Documents/bayesian-portfolio/")
 
+by_symbol <- group_by_symbol(sample)
+
+daily_close <- daily_returns(by_symbol)
 
 #########################################################################################################################
 
@@ -22,11 +25,12 @@ setwd("~/Documents/bayesian-portfolio/")
 
 
 # Multivariate Random walk for model for fitting daily stock returns.
-S <- 10000
+S <- 100000
 N <- nrow(daily_close)
 C <- ncol(daily_close)
 
-stocks_rw <- matrix(NA,S,c+c*c)
+for_pred <- 20        # Number of values to keep for prediction
+
 
 
 # Data 
@@ -34,11 +38,18 @@ X <- log(daily_close[1:(N-1),2:C])
 Y <- log(daily_close[2:N,2:C])
 
 stock_names <- colnames(X)
+n <- nrow(Y)
+c <- ncol(Y)
+
+X <- X[1:(n-for_pred),]
+Y <- Y[1:(n-for_pred),]
 
 # Let Y take the value of the first difference
 Y <- Y-X
-n <- nrow(Y)
-c <- ncol(Y)
+
+
+# Space for samples
+stocks_rw <- matrix(NA,S,c+c*c)
 
 # Initial values
 covmat <- cov(Y)
@@ -51,15 +62,12 @@ A <- t(Y)%*%Y
 mu0 <- rep(0,c)
 V <- diag(c)
 
-P_Y <- matrix(NA,n,c)
-
-avg_errors <- matrix(S,n,c)
-
 
 for(s in 1:S){
-  P <- covmat + V
+  P <- covmat 
+  if(s==1){P <- covmat+V}
   M <- mu1 + mu0
-  alpha <- rmvnorm(1,mu,P)
+  alpha <- rmvnorm(1,M,P)
   
   covmat <- rinvwishart(df+c, A+V)
   cov_out <- matrix(covmat, 1, c*c)

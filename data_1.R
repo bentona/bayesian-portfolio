@@ -118,6 +118,9 @@ daily_returns <- function(by_symbol){
   }
   
   daily_return[2:N,2:(C+1)]
+  
+  #return(daily_return) # Changed this to give prices
+  return(daily_close)
 }
 
 
