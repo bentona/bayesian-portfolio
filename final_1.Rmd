@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(rjags)
+<<<<<<< HEAD
 library(magrittr)
 library(tidyverse)
 library(data.table)
@@ -18,6 +19,16 @@ library(LaplacesDemon)
 
 ```{r}
 sample <- read.csv("~/Documents/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
+=======
+library(data.table)
+library(tidyverse)
+library(LaplacesDemon)
+library(mvtnorm)
+```
+
+```{r}
+sample <- read.csv("./sample.csv", stringsAsFactors = FALSE)
+>>>>>>> master
 sample$date <- as.Date(sample$datetime)
 sample$symbol <- as.factor(sample$symbol)
 
@@ -25,7 +36,10 @@ justone <- sample[sample$symbol == 'PRTA',]
 justone <- justone[1:200,]
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> master
 add_return_pct <- function(x, y){
   df <- x
   df$close_30_ago = NA
@@ -65,6 +79,11 @@ stock_returns <- na.omit(stock_returns)
 ```
 
 ```{r}
+<<<<<<< HEAD
+=======
+#### THIS IS NOT BEING USED RIGHT NOW###############################################
+
+>>>>>>> master
 # Some random parameters
 T <- nrow(stock_returns)
 N <- ncol(stock_returns[,drop(-1)])
@@ -103,13 +122,321 @@ scale <- diag(N)
 # Prior for covariance matrix
 cov_prior <- rinvwishart(df,scale)
 ```
+<<<<<<< HEAD
+=======
+
+
+
+```{r}
+############################## GIBBS SAMPLERS BELOW USE DAILY RETURNS######################################
+
+# Daily returns
+N <- nrow(by_symbol[[1]])
+C <- length(by_symbol)
+
+daily_close <- matrix(NA, N,C+1)
+colnames(daily_close) <- c("date",levels(as.factor(sample$symbol)))
+daily_close[,"date"] <- by_symbol[[1]]$date
+for (i in 1:C){
+  daily_close[,(i+1)] <- by_symbol[[i]]$close
+}
+
+daily_return <- matrix(NA, N, C+1)
+colnames(daily_return) <- colnames(daily_close)
+daily_return[,1] <- daily_close[,1]
+
+for (j in 2:(C+1)){
+  for (i in 2:N){
+    daily_return[i,j] <- 100*(daily_close[i,j] / daily_close[i-1,j]-1)
+  }
+}
+
+daily_return <- daily_return[2:N,2:(C+1)]
+```
+
+```{r}
+# Gibbs sampler for portfolio ****Fixed Weights**** This is a test code chunk
+set.seed(183)
+
+S <- 10000
+port_samples <- matrix(NA,S,3)
+
+n <- nrow(daily_return)
+
+# Initial Values
+mu1 <- colMeans(daily_return)
+cov1 <- cov(daily_return)
+w <- runif(C)
+w <- w/sum(w)
+port_ret1 <- rowSums(daily_return*w)
+mu0 <- mean(port_ret1)
+s2 <- t(w)%*%cov1%*%w
+
+# Priors
+tau_p <- 10
+a <- 0.01
+b <- 0.01
+
+
+V <- 1/tau_p
+
+
+for (s in 1:S){
+  P <- n/s2 + V
+  M <- sum(port_ret1)/s2 + mu0*V
+  mu <- rnorm(1,M/P, 1/sqrt(P))
+  
+  A <- n/2 + a
+  B <- sum((Y-mu)^2)/2 + b
+  s2 <- 1/rgamma(1,A,B)
+  
+  sharpe <- mu/sqrt(s2)
+  
+  port_samples[s,] <- c(mu, s2, sharpe)
+}
+
+# Plot trace
+for (i in 1:ncol(port_samples)){
+  plot(1:S, port_samples[,i], xlab = "Iterations", ylab = colnames(port_samples[,i]), type = "l", 
+       ylim = c(min(port_samples[,i])-0.2*abs(min(port_samples[,i])),
+                max(port_samples[,i])+0.2*abs(max(port_samples[,i]))))
+}
+
+# Plot density
+for (i in 1:ncol(port_samples)){
+  plot(density(port_samples[,i]), xlab = colnames(port_samples[,i]), ylab = "Density")
+}
+
+colMeans(port_samples)
+
+```
+
+```{r}
+# Plot trace
+for (i in 1:ncol(port_samples)){
+  plot(1:S, port_samples[,i], xlab = "Iterations", ylab = colnames(port_samples[,i]), type = "l", 
+       ylim = c(min(port_samples[,i])-0.2*abs(min(port_samples[,i])),
+                max(port_samples[,i])+0.2*abs(max(port_samples[,i]))))
+}
+
+# Plot density
+for (i in 1:ncol(port_samples)){
+  plot(density(port_samples[,i]), xlab = colnames(port_samples[,i]), ylab = "Density")
+}
+
+colMeans(port_samples)
+
+```
+
+
+
+```{r}
+##########################  WARNING  ####################################################
+
+##################### THIS OUTPUTS A HUGE MATRIX, POSSILBE SEND TO LIST????? ###############################
+
+
+
+######### TO DO ##########################
+ # Can you fix the weights to iterate over a gradient? Right now it is just random selection.
+# Weights must be w >=0 for each stock, and should maximize the value "sharpe" below
+
+# Gibbs sampler for portfolio Varying Weights
+set.seed(876)
+n <- nrow(daily_return)
+
+# Create a place for sample data
+portfolios <- list()
+N_port <- 10
+
+S <- 10000
+port_samples <- matrix(NA,S*N_port,4)
+colnames(port_samples) <- c("ret","s2","sharpe","port")
+
+# Initial Values
+mu1 <- colMeans(daily_return)
+cov1 <- cov(daily_return)
+w <- runif(C,0,1000)
+w <- w/sum(w)
+
+
+# Priors
+tau_p <- 10
+a <- 0.01
+b <- 0.01
+
+
+V <- 1/tau_p
+
+
+
+for (i in 1:N_port){
+  for (s in 1:S){
+    P <- n/s2 + V
+    M <- sum(port_ret1)/s2 + mu0*V
+    mu <- rnorm(1,M/P, 1/sqrt(P))
+    
+    A <- n/2 + a
+    B <- sum((Y-mu)^2)/2 + b
+    s2 <- 1/rgamma(1,A,B)
+    
+    sharpe <- mu/sqrt(s2)
+    
+    port_samples[(s+((i-1)*10000)),] <- c(mu, s2, sharpe,i)
+    
+  }
+  portfolios[[i]] <- list(port=i,weights=w)
+  w <- runif(C,0,1000)
+  w <- w/sum(w)
+  port_ret1 <- rowSums(daily_return*w)
+  mu0 <- mean(port_ret1)
+  s2 <- t(w)%*%cov1%*%w
+}
+
+```
+
+
+
+```{r}
+
+# Random walk on stocks *univariate
+
+### CAN YOU EXPAND THIS TO MULTIVARIATE AND MAKE IT MORE EFFICIENT???
+S <- 10000
+ret_samples <- matrix(NA,S,2)
+colnames(ret_samples) <- c("E_Y", "s2")
+N <- nrow(daily_return)
+
+stocks_rw <- list()
+
+for (i in 1:2){
+  # Data for individual stock
+  X <- daily_return[1:(N-1),i]
+  Y <- daily_return[2:N,i]
+  n <- length(Y)
+  
+  # Initial values
+  mu <- mean(Y)
+  s2 <- var(Y)
+  
+  # Priors
+  mu0 <- 0
+  tau <- 10
+  a <- 0.01
+  b <- 0.01
+  V <- 1/tau
+  
+  for (s in 1:S){
+    P <- n/s2 + V
+    M <- sum(Y)/s2 + mu0*V
+    mu <- rnorm(1,M/P,1/sqrt(P))
+    
+    A <- n/2 + a
+    B <- sum((Y-mu)^2)/2 + b
+    s2 <- 1/rgamma(1,A,B)
+    
+    ret_samples[s,] <- c(mu, s2)
+  }
+  stocks_rw[[i]] <- ret_samples
+  ret_samples <- matrix(NA,S,2)
+  colnames(ret_samples) <- c("E_Y", "s2")
+}
+
+```
+
+```{r}
+plot(1:S,stocks_rw[[1]][,1], type = "l")
+colMeans(stocks_rw[[1]])
+```
+
+```{r}
+
+# Random walk on stocks *MULTIVARIATE
+
+
+S <- 10000
+N <- nrow(daily_return)
+C <- ncol(daily_return)
+
+stocks_rw <- list()
+
+
+# Data 
+X <- daily_return[1:(N-1),]
+Y <- daily_return[2:N,]
+n <- nrow(Y)
+
+# Initial values
+mu <- colMeans(Y-X)
+covmat <- cov(Y-X)
+
+# Priors
+mu0 <- rep(0,C)
+tau <- 10
+V <- diag(C)/tau
+
+P_Y <- matrix(NA,n,C)
+
+
+for(s in 1:S){
+  P <- (1/n)*covmat + V
+
+  for (t in 1:n){
+    P_Y[t,] <- rmvnorm(1,X[t,],P)
+  }
+  
+  epsilon <- Y - P_Y
+  colnames(epsilon) <- colnames(X)
+  covmat2 <- cov(epsilon)
+  
+  covmat <- rinvwishart(n-C, covmat2)
+
+  stocks_rw[[s]] <- list(P_Y = P_Y, covmat = covmat)
+}
+
+#View(P_Y)
+```
+
+```{r}
+samples <- data.table()
+
+for(i in length(stocks_rw)){
+  errors <- Y-stocks_rw[[i]]$P_Y
+  out <- cbind(stocks_rw[[i]]$P_Y, errors)
+  samples <- rbind(samples, out)
+}
+
+colMeans(samples)
+
+#View(samples)
+```
+
+```{r}
+samples <- as.data.frame(samples)
+N <- nrow(samples)
+for (i in 1:ncol(samples)){
+  plot(1:N, samples[,i], type = 'l')
+  plot(density(samples[,i]))
+}
+```
+
+
+
+
+
+Model 1
+>>>>>>> master
 ```{r}
 # Portfolio returns
 
 model_1_string <- textConnection("model{
 # Priors
 for (i in 1:N){
+<<<<<<< HEAD
   mu[i] ~ dnorm(0,0.01)
+=======
+  mu[i] ~ dnorm(0,0.1)
+>>>>>>> master
 }
 Omega[1:N,1:N] ~ dwish(scale[,],df)
 asset_returns ~ dmnorm(mu[], Omega[,])
@@ -125,6 +452,10 @@ for (i in 2:T){
   stock_returns[i,1:N] ~ dmnorm(pred_ret[i,1:N], Omega[,])
   pred_port_ret[i] <- inprod(stock_returns[i,1:N],w)
   port_ret[i] ~ dnorm(pred_port_ret[i], tau_p)
+<<<<<<< HEAD
+=======
+  
+>>>>>>> master
 }
 }")
 
@@ -148,6 +479,7 @@ View(test)
 ```
 
 
+<<<<<<< HEAD
 
 
 
@@ -164,6 +496,75 @@ View(test)
 
 
 
+=======
+Model 2
+```{r}
+# Portfolio returns
+
+
+
+model_2_string <- textConnection("model{
+# Priors
+for (i in 1:N){
+  mu[i] ~ dnorm(0,0.1)
+}
+Omega1[1:N,1:N] ~ dwish(scale[,],df)
+
+asset_returns ~ dmnorm(mu[], Omega1[,])
+
+
+# Likelihood
+pred_ret[1,1:N] <- asset_returns
+
+for (i in 2:T){
+  pred_ret[i,1:N] <- stock_returns[i-1,1:N]
+  stock_returns[i,1:N] ~ dmnorm(pred_ret[i,1:N], Omega1[,])
+}
+}")
+
+data <- list(stock_returns=stock_returns[,drop(-1)], scale=scale, df=df, T=T, N=N)
+init <- list(asset_returns=e_returns)
+params <- c("pred_ret", "asset_returns")
+model_2 <- jags.model(model_2_string, data=data, inits=init, n.chains = 3, quiet=TRUE)
+```
+
+```{r}
+update(model_2, 5000)
+samp_2 <- coda.samples(model_2, variable.names = params, n.iter=10000)
+```
+
+```{r}
+summary(samp_2)
+```
+
+```{r}
+test <- samp_2[[1]]
+View(test)
+```
+
+
+```{r}
+stockA <- daily_return[,2]
+N <- length(stockA)
+plot(1:N, stockA, type="l")
+
+mean(stockA)
+
+PriceA <- by_symbol[[1]]$close
+
+testA <- lm(PriceA[2:N]~PriceA[1:N-1])
+testA
+
+test2A <- lm(stockA[2:N]~stockA[1:N-1])
+test2A
+
+plot(PriceA[2:N], PriceA[1:N-1])
+cor(PriceA[2:N], PriceA[1:N-1])
+
+plot(stockA[2:N], stockA[1:N-1])
+cor(stockA[2:N],stockA[1:N-1])
+```
+>>>>>>> master
 
 
 

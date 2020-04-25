@@ -1,0 +1,835 @@
+?points
+# Continuous probability case#
+#
+# Make some data, this way I know the true value of mu#
+#
+mu_true <- 1#
+x		<- rnorm(10, mu_true,1)#
+#
+# X is just a random sample, this could be any data sample.#
+#
+# The likelihood function is the normal distribution of the data, given the values of the parameters#
+#
+# The prior is the assumed distribution of the parameter(s)#
+#
+# Define the likelihood and prior#
+like <- function(x, mu, sigma){#
+	prod(dnorm(x,mu,sigma))#
+}#
+#
+prior <- function(mu, pri_mn, pri_sd){#
+	dnorm(mu, pri_mn, pri_sd)#
+	# The probability of mu given the distribution#
+}#
+#
+# Plot the posterior on a grid#
+#
+mu			<- seq(min(x), max(x), length=100)#
+post		<- mu # this way the length of the vector is the same#
+#
+for (i in 1:length(mu)){#
+	post[i]	<- like(x,mu[i],1)*prior(mu[i],0,10)#
+	# This gives numerator of posterior#
+}#
+#
+marg_x	<- sum(post)#
+post	<- post/marg_x#
+#
+plot(mu, post, type="l",#
+		xlab="Mu", ylab="Posterior", cex.lab=1.5)#
+points(x,0*x, pch=19, col=2)  #pch is just the shape of point on graph (point characteristic)
+# Continuous probability case#
+#
+# Make some data, this way I know the true value of mu#
+#
+mu_true <- 1#
+x		<- rnorm(10, mu_true,1)#
+#
+# X is just a random sample, this could be any data sample.#
+#
+# The likelihood function is the normal distribution of the data, given the values of the parameters#
+#
+# The prior is the assumed distribution of the parameter(s)#
+#
+# Define the likelihood and prior#
+like <- function(x, mu, sigma){#
+	prod(dnorm(x,mu,sigma))#
+}#
+#
+prior <- function(mu, pri_mn, pri_sd){#
+	dnorm(mu, pri_mn, pri_sd)#
+	# The probability of mu given the distribution#
+}#
+#
+# Plot the posterior on a grid#
+#
+mu			<- seq(min(x), max(x), length=100)#
+post		<- mu # this way the length of the vector is the same#
+#
+for (i in 1:length(mu)){#
+	post[i]	<- like(x,mu[i],1)*prior(mu[i],0,10)#
+	# This gives numerator of posterior#
+}#
+#
+marg_x	<- sum(post)#
+post	<- post/marg_x#
+#
+plot(mu, post, type="l",#
+		xlab="Mu", ylab="Posterior", cex.lab=1.5)#
+points(x,0*x, pch=19, col=2)  #pch is just the shape of point on graph (point characteristic)#
+abline(v=1)
+# Continuous probability case#
+#
+# Make some data, this way I know the true value of mu#
+#
+mu_true <- 1#
+x		<- rnorm(10, mu_true,1)#
+#
+# X is just a random sample, this could be any data sample.#
+#
+# The likelihood function is the normal distribution of the data, given the values of the parameters#
+#
+# The prior is the assumed distribution of the parameter(s)#
+#
+# Define the likelihood and prior#
+like <- function(x, mu, sigma){#
+	prod(dnorm(x,mu,sigma))#
+}#
+#
+prior <- function(mu, pri_mn, pri_sd){#
+	dnorm(mu, pri_mn, pri_sd)#
+	# The probability of mu given the distribution#
+}#
+#
+# Plot the posterior on a grid#
+#
+mu			<- seq(min(x), max(x), length=100)#
+post		<- mu # this way the length of the vector is the same#
+#
+for (i in 1:length(mu)){#
+	post[i]	<- like(x,mu[i],1)*prior(mu[i],0,10)#
+	# This gives numerator of posterior#
+}#
+#
+marg_x	<- sum(post)#
+post	<- post/marg_x#
+#
+plot(mu, post, type="l",#
+		xlab="Mu", ylab="Posterior", cex.lab=1.0)#
+points(x,0*x, pch=19, col=2)  #pch is just the shape of point on graph (point characteristic)#
+abline(v=1)
+# Continuous probability case#
+#
+# Make some data, this way I know the true value of mu#
+#
+mu_true <- 1#
+x		<- rnorm(10, mu_true,1)#
+#
+# X is just a random sample, this could be any data sample.#
+#
+# The likelihood function is the normal distribution of the data, given the values of the parameters#
+#
+# The prior is the assumed distribution of the parameter(s)#
+#
+# Define the likelihood and prior#
+like <- function(x, mu, sigma){#
+	prod(dnorm(x,mu,sigma))#
+}#
+#
+prior <- function(mu, pri_mn, pri_sd){#
+	dnorm(mu, pri_mn, pri_sd)#
+	# The probability of mu given the distribution#
+}#
+#
+# Plot the posterior on a grid#
+#
+mu			<- seq(min(x), max(x), length=100)#
+post		<- mu # this way the length of the vector is the same#
+#
+for (i in 1:length(mu)){#
+	post[i]	<- like(x,mu[i],1)*prior(mu[i],0,10)#
+	# This gives numerator of posterior#
+}#
+#
+marg_x	<- sum(post)#
+post	<- post/marg_x#
+#
+plot(mu, post, type="l",#
+		xlab="Mu", ylab="Posterior", cex.lab=1.5)#
+points(x,0*x, pch=19, col=2)  #pch is just the shape of point on graph (point characteristic)#
+abline(v=1)
+?duniform
+?dunif
+# Input data#
+#
+x	<-c(-3.3, 0.1,-1.1,2.7,2.0,-0.4)#
+y	<-c(-2.6,-0.2,-1.5,1.5,1.9,-0.3)#
+#
+# Define the likelihood and prior#
+#
+like 	<- function(x,mu_x,sig_x,y,mu_y,sig_y,rho){#
+	(1/(2*pi*sig_x*sig_y*sqrt(1-rho^2)))*#
+	exp(-(((x-mu_x)/sig_x)^2+((y-mu_y)/sig_y)^2-#
+	2*rho*((x-mu_x)/sig_x)*((y-mu_y)/sig_y))/(2*(1-rho^2)))#
+}#
+#
+prior	<- function(rho,min,max){#
+	dunif(rho,min,max)#
+}#
+#
+# initialized values#
+rho		<- seq(-1,1,100)#
+min		<- -1#
+max		<- 1#
+post	<- rho#
+#
+mu_x	<- 0#
+sig_x	<- 1#
+mu_y	<- 0#
+sig_y	<- 1#
+for (i in 1:length(rho_x)){#
+	post[i] <- like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])*#
+				prior(rho[i],min, max)#
+}#
+#
+marg 	<- sum(post)#
+post	<- post/marg#
+#
+plot(rho, post, type="l"#
+	xlab=expression(rho), ylab="Posterior", cex.lab=1.5)
+# Input data#
+#
+x	<-c(-3.3, 0.1,-1.1,2.7,2.0,-0.4)#
+y	<-c(-2.6,-0.2,-1.5,1.5,1.9,-0.3)#
+#
+# Define the likelihood and prior#
+#
+like 	<- function(x,mu_x,sig_x,y,mu_y,sig_y,rho){#
+	(1/(2*pi*sig_x*sig_y*sqrt(1-rho^2)))*#
+	exp(-(((x-mu_x)/sig_x)^2+((y-mu_y)/sig_y)^2-#
+	2*rho*((x-mu_x)/sig_x)*((y-mu_y)/sig_y))/(2*(1-rho^2)))#
+}#
+#
+prior	<- function(rho,min,max){#
+	dunif(rho,min,max)#
+}#
+#
+# initialized values#
+rho		<- seq(-1,1,100)#
+min		<- -1#
+max		<- 1#
+post	<- rho#
+#
+mu_x	<- 0#
+sig_x	<- 1#
+mu_y	<- 0#
+sig_y	<- 1#
+for (i in 1:length(rho)){#
+	post[i] <- like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])*#
+				prior(rho[i],min, max)#
+}#
+#
+marg 	<- sum(post)#
+post	<- post/marg#
+#
+plot(rho, post, type="l"#
+	xlab=expression(rho), ylab="Posterior", cex.lab=1.5)
+like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])
+x <- rnorm(10,1,1)
+print(x)
+# Input data#
+#
+x	<-c(-3.3, 0.1,-1.1,2.7,2.0,-0.4)#
+y	<-c(-2.6,-0.2,-1.5,1.5,1.9,-0.3)#
+#
+# Define the likelihood and prior#
+#
+like 	<- function(x,mu_x,sig_x,y,mu_y,sig_y,rho){#
+	prod((1/(2*pi*sig_x*sig_y*sqrt(1-rho^2)))*#
+	exp(-(((x-mu_x)/sig_x)^2+((y-mu_y)/sig_y)^2-#
+	2*rho*((x-mu_x)/sig_x)*((y-mu_y)/sig_y))/(2*(1-rho^2))))#
+}#
+#
+prior	<- function(rho,min,max){#
+	dunif(rho,min,max)#
+}#
+#
+# initialized values#
+rho		<- seq(-1,1,100)#
+min		<- -1#
+max		<- 1#
+post	<- rho#
+#
+mu_x	<- 0#
+sig_x	<- 1#
+mu_y	<- 0#
+sig_y	<- 1#
+for (i in 1:length(rho)){#
+	post[i] <- like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])*#
+				prior(rho[i],min, max)#
+}#
+#
+marg 	<- sum(post)#
+post	<- post/marg#
+#
+plot(rho, post, type="l"#
+	xlab=expression(rho), ylab="Posterior", cex.lab=1.5)
+# Input data#
+#
+x	<-c(-3.3, 0.1,-1.1,2.7,2.0,-0.4)#
+y	<-c(-2.6,-0.2,-1.5,1.5,1.9,-0.3)#
+#
+# Define the likelihood and prior#
+#
+like 	<- function(x,mu_x,sig_x,y,mu_y,sig_y,rho){#
+	prod((1/(2*pi*sig_x*sig_y*sqrt(1-rho^2)))*#
+	exp(-(((x-mu_x)/sig_x)^2+((y-mu_y)/sig_y)^2-#
+	2*rho*((x-mu_x)/sig_x)*((y-mu_y)/sig_y))/(2*(1-rho^2))))#
+}#
+#
+prior	<- function(rho,min,max){#
+	dunif(rho,min,max)#
+}#
+#
+# initialized values#
+rho		<- seq(-1,1,100)#
+min		<- -1#
+max		<- 1#
+post	<- rho#
+#
+mu_x	<- 0#
+sig_x	<- 1#
+mu_y	<- 0#
+sig_y	<- 1#
+for (i in 1:length(rho)){#
+	post[i] <- like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])*#
+				prior(rho[i],min, max)#
+}#
+#
+marg 	<- sum(post)#
+post	<- post/marg#
+#
+plot(rho, post, type="l",#
+	xlab=expression(rho), ylab="Posterior", cex.lab=1.5)
+# Input data#
+#
+x	<-c(-3.3, 0.1,-1.1,2.7,2.0,-0.4)#
+y	<-c(-2.6,-0.2,-1.5,1.5,1.9,-0.3)#
+#
+# Define the likelihood and prior#
+#
+like 	<- function(x,mu_x,sig_x,y,mu_y,sig_y,rho){#
+	prod((1/(2*pi*sig_x*sig_y*sqrt(1-rho^2)))*#
+	exp(-(((x-mu_x)/sig_x)^2+((y-mu_y)/sig_y)^2-#
+	2*rho*((x-mu_x)/sig_x)*((y-mu_y)/sig_y))/(2*(1-rho^2))))#
+}#
+#
+prior	<- function(rho,min,max){#
+	dunif(rho,min,max)#
+}#
+#
+# initialized values#
+rho		<- seq(-0.999,999,100)#
+min		<- -1#
+max		<- 1#
+post	<- rho#
+#
+mu_x	<- 0#
+sig_x	<- 1#
+mu_y	<- 0#
+sig_y	<- 1#
+for (i in 1:length(rho)){#
+	post[i] <- like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])*#
+				prior(rho[i],min, max)#
+}#
+#
+marg 	<- sum(post)#
+post	<- post/marg#
+#
+plot(rho, post, type="l",#
+	xlab=expression(rho), ylab="Posterior", cex.lab=1.5)#
+abline(v=rho[which.max(post)], lty=2,col=2)
+rho
+length(rho)
+# Input data#
+#
+x	<-c(-3.3, 0.1,-1.1,2.7,2.0,-0.4)#
+y	<-c(-2.6,-0.2,-1.5,1.5,1.9,-0.3)#
+#
+# Define the likelihood and prior#
+#
+like 	<- function(x,mu_x,sig_x,y,mu_y,sig_y,rho){#
+	prod( (1 / (2*pi*sig_x*sig_y*sqrt(1-rho^2))) *#
+	exp(-( ((x-mu_x)/sig_x)^2 + ((y-mu_y)/sig_y)^2 -#
+	2 * rho * ((x-mu_x)/sig_x) * ((y-mu_y)/sig_y) ) / (2*(1-rho^2)) ) )#
+}#
+#
+prior	<- function(rho,min,max){#
+	dunif(rho,min,max)#
+}#
+#
+# initialized values#
+rho		<- seq(-0.999,999,100)#
+min		<- -1#
+max		<- 1#
+post	<- rho#
+#
+mu_x	<- 0#
+sig_x	<- 1#
+mu_y	<- 0#
+sig_y	<- 1#
+for (i in 1:length(rho)){#
+	post[i] <- like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])*#
+				prior(rho[i],min, max)#
+}#
+#
+marg 	<- sum(post)#
+post	<- post/marg#
+#
+plot(rho, post, type="l",#
+	xlab=expression(rho), ylab="Posterior", cex.lab=1.5)#
+abline(v=rho[which.max(post)], lty=2,col=2)
+length(rho)
+# Input data#
+#
+x	<-c(-3.3, 0.1,-1.1,2.7,2.0,-0.4)#
+y	<-c(-2.6,-0.2,-1.5,1.5,1.9,-0.3)#
+#
+# Define the likelihood and prior#
+#
+like 	<- function(x,mu_x,sig_x,y,mu_y,sig_y,rho){#
+	prod( (1 / (2*pi*sig_x*sig_y*sqrt(1-rho^2))) *#
+	exp(-( ((x-mu_x)/sig_x)^2 + ((y-mu_y)/sig_y)^2 -#
+	2 * rho * ((x-mu_x)/sig_x) * ((y-mu_y)/sig_y) ) / (2*(1-rho^2)) ) )#
+}#
+#
+prior	<- function(rho,min,max){#
+	dunif(rho,min,max)#
+}#
+#
+# initialized values#
+rho		<- seq(-0.999,999, length=100)#
+min		<- -1#
+max		<- 1#
+post	<- rho#
+#
+mu_x	<- 0#
+sig_x	<- 1#
+mu_y	<- 0#
+sig_y	<- 1#
+for (i in 1:length(rho)){#
+	post[i] <- like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])*#
+				prior(rho[i],min, max)#
+}#
+#
+marg 	<- sum(post)#
+post	<- post/marg#
+#
+plot(rho, post, type="l",#
+	xlab=expression(rho), ylab="Posterior", cex.lab=1.5)#
+abline(v=rho[which.max(post)], lty=2,col=2)
+warnings()
+dunif(-1,-1,1)
+i=1
+like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])
+i=2
+like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])
+rho[2]
+rho
+# Input data#
+#
+x	<-c(-3.3, 0.1,-1.1,2.7,2.0,-0.4)#
+y	<-c(-2.6,-0.2,-1.5,1.5,1.9,-0.3)#
+#
+# Define the likelihood and prior#
+#
+like 	<- function(x,mu_x,sig_x,y,mu_y,sig_y,rho){#
+	prod( (1 / (2*pi*sig_x*sig_y*sqrt(1-rho^2))) *#
+	exp(-( ((x-mu_x)/sig_x)^2 + ((y-mu_y)/sig_y)^2 -#
+	2 * rho * ((x-mu_x)/sig_x) * ((y-mu_y)/sig_y) ) / (2*(1-rho^2)) ) )#
+}#
+#
+prior	<- function(rho,min,max){#
+	dunif(rho,min,max)#
+}#
+#
+# initialized values#
+rho		<- seq(-0.999,0.999, length=100)#
+min		<- -1#
+max		<- 1#
+post	<- rho#
+#
+mu_x	<- 0#
+sig_x	<- 1#
+mu_y	<- 0#
+sig_y	<- 1#
+for (i in 1:length(rho)){#
+	post[i] <- like(x,mu_x,sig_x,y,mu_y,sig_y,rho[i])*#
+				prior(rho[i],min, max)#
+}#
+#
+marg 	<- sum(post)#
+post	<- post/marg#
+#
+plot(rho, post, type="l",#
+	xlab=expression(rho), ylab="Posterior", cex.lab=1.5)#
+abline(v=rho[which.max(post)], lty=2,col=2)
+#Assignment 4#
+####Author: Chris Hooks#
+####Date: Feb. 11, 2020#
+#
+##Problem 2.2#
+The Major League Baseball player Reggie Jackson is known as “Mr. October” for his outstanding performances in the World Series (which takes place in October). Over his long career he played in 2820 regular-season games and hit 563 home runs in these games (a player can hit 0, 1, 2, ... home runs in a game). He also played in 27 World Series games and hit 10 home runs in these games. Assuming uninformative conjugate priors, summarize the posterior distribution of his home-run rate in the regular season and World Series. Is there sufficient evidence to claim that he performs better in the World Series?#
+#
+```{r}#
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- 1:1000#
+#
+post1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+post2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+post3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2 #
+#
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior")#
+```
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- 1:1000#
+#
+post1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+post2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+post3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2 #
+#
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior")
+length(y)
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- 1:1000#
+#
+post1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+post2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+post3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2 #
+#
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior", type="l")
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- 1:1000#
+#
+post1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+post2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+post3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2 #
+#
+plot(y,post1, xlab="Homeruns", ylab="Joint Posterior", type="l")
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- seq(0.001,0.999, by = 0.001)#
+#
+post1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+post2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+post3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2 #
+#
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior")
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- seq(0.1,0.4, by = 0.001)#
+#
+post1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+post2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+post3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2 #
+#
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior", type="l")
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior", type="l")#
+abline(v=(y1/n1), col="red")#
+abline(v=(y2/n2), col="blue")
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior", type="l")#
+abline(v=(y2/n2), col="blue")
+y2/n2
+y1/n1
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- seq(0.01,0.99, by = 0.001)#
+#
+post1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+post2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+post3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2 #
+#
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior", type="l", col=1)#
+lines(y,post1,type="l", col=2)#
+lines(y,post2,type="l", col=3)#
+abline(v=(y2/n2), col="blue")#
+abline(v=(y1/n1), col="red")
+plot(y,post1, xlab="Homeruns", ylab="Joint Posterior", type="l", col=1)#
+#lines(y,post1,type="l", col=2)#
+lines(y,post2,type="l", col=3)#
+abline(v=(y2/n2), col="blue")#
+abline(v=(y1/n1), col="red")
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior", type="l", col=1)#
+#lines(y,post1,lty=2, col=3)#
+lines(y,post2,type="l", col=2)#
+abline(v=(y2/n2), col="blue")#
+abline(v=(y1/n1), col="red")
+plot(y,post, xlab="Homeruns", ylab="Joint Posterior", type="l", col=1)#
+lines(y,post1,lty=2, col=3)#
+lines(y,post2,type="l", col=2)#
+abline(v=(y2/n2), col="blue")#
+abline(v=(y1/n1), col="red")
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior", type="l", col=1)#
+lines(y,post1,lty=2, col=3)#
+lines(y,post2,type="l", col=2)#
+abline(v=(y2/n2), col="blue")#
+abline(v=(y1/n1), col="red")
+plot(y,post3, xlab="Homeruns", ylab="Joint Posterior", type="l", col=1)#
+lines(y,post1,lty=2, col=3)#
+lines(y,post2,type="l", col=2)#
+abline(v=(y2/n2), col="blue")#
+abline(v=(y1/n1), col="black")
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- seq(0.01,0.99, by = 0.001)#
+#
+d1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+d2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+d3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2 #
+#
+plot(y,d3, xlab="Homeruns", ylab="Joint Posterior", type="l", col=1)#
+lines(y,d1,lty=2, col=3)#
+lines(y,d2,type="l", col=2)#
+abline(v=(y2/n2), col="blue")#
+abline(v=(y1/n1), col="black")#
+#
+post1 <- ((n1/(n1+n2))*post1)/d3#
+post2 <- ((n2/(n1+n2))*post2)/d3#
+#
+plot(y,post1, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)#
+lines(y,post2, lty=1,col=3)
+plot(y,post1, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)#
+lines(y,post2, lty=1,col=3)
+plot(y,post1, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)
+plot(y,post2, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)
+plot(y,d2, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)
+plot(y,d1, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)
+plot(y,post1, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)
+plot(y,post2, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)
+1-n1/(n1+n2)
+x <- 1:10#
+y <- 3*x#
+plot(x, y, main = expression(y %prop% x))
+?hist
+b_grid <- seq(0.01,0.99,0.001)#
+median <- qgamma(0.5,100*b_grid^2, b_grid)#
+#
+b <- b_grid[which.min(abs(median-75))]#
+b#
+a <- 100*b^2#
+a#
+#
+plot(b_grid,median)#
+abline(v=b)
+lambda <- rgamma(10000000,a,b)#
+hist(lambda,breaks=100)
+title: "Assignment 4"#
+output: html_document#
+---#
+#
+```{r setup, include=FALSE}#
+knitr::opts_chunk$set(echo = TRUE)#
+``#
+#
+#Assignment 4#
+####Author: Chris Hooks#
+####Date: Feb. 11, 2020#
+#
+##Problem 2.2#
+The Major League Baseball player Reggie Jackson is known as “Mr. October” for his outstanding performances in the World Series (which takes place in October). Over his long career he played in 2820 regular-season games and hit 563 home runs in these games (a player can hit 0, 1, 2, ... home runs in a game). He also played in 27 World Series games and hit 10 home runs in these games. Assuming uninformative conjugate priors, summarize the posterior distribution of his home-run rate in the regular season and World Series. Is there sufficient evidence to claim that he performs better in the World Series?#
+#
+####Answer:#
+Yes, there is sufficient evidence. The two distributions have almost no overlap between their distributions. The joint distribution is heavily weighted towards the regular season. In this case, there is no difference however.#
+```{r}#
+a1 <- b1 <- 1#
+a2 <- b2 <- 1#
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10#
+y <- seq(0.01,0.99, by = 0.001)#
+#
+d1 <- dbeta(y,y1+a1,(n1-y1+a1))#
+d2 <- dbeta(y,y2+a2,(n2-y2+a2))#
+#
+d3 <- (n1/(n1+n2))*post1+(n2/(n1+n2))*post2#
+#
+plot(y,d3, xlab="Homeruns", ylab="Joint Posterior", type="l", col=1)#
+lines(y,d1,lty=2, col=3)#
+lines(y,d2,type="l", col=2)#
+abline(v=(y2/n2), col="blue")#
+abline(v=(y1/n1), col="black")#
+```#
+```{r}#
+post1 <- ((n1/(n1+n2))*post1)/d3#
+post2 <- ((n2/(n1+n2))*post2)/d3#
+#
+plot(y,post2, xlab="Homerun Percentage", ylab="Posterior Probability", type="l", col=2)#
+lines(y,post2, lty=1,col=3)#
+```#
+#
+##Problem 2.3#
+Assume that Y |θ ∼ Exponential(θ), i.e., Y |θ ∼ Gamma(1, θ). Find a conjugate prior distribution for θ and derive the resulting posterior distribution.#
+#
+###Answer:#
+The conjugate prior of a Gamma distribution is the Gamma distribution. Therefore:#
+  expression(theta) ~ Gamma(a,b)#
+  and the posterior distribution is:#
+  expression(theta)|*Y* ~ Gamma(a+1,Y+b)#
+#
+  P(expression(theta)|*Y*) %prop% f(*Y*|expression(theta))expression(pi)(expression(theta))#
+          %prop% [expression(theta)*exp[-expression(theta)Y]][expression(theta)^(a-1)exp[-expression(theta)b]]#
+          %prop% expression(theta)^((a+1)-1)exp[-expression(theta)(Y+b)]#
+##Problem 2.5#
+Over the past 50 years California has experienced an average of λ0 = 75 large wildfires per year. For the next 10 years you will record the number of large fires in California and then fit a Poisson/gamma model to these data. Let the rate of large fires in this future period, λ, have prior λ ∼ Gamma(a,b). Select a and b so that the prior is uninformative with prior variance around 100 and gives prior probability approximately Prob(λ > λ0) = 0.5 so that the prior places equal probability on both hypotheses in the test for a change in the rate.#
+#
+###Answer:#
+```{r}#
+b_grid <- seq(0.01,0.99,0.001)#
+median <- qgamma(0.5,100*b_grid^2, b_grid)#
+#
+b <- b_grid[which.min(abs(median-75))]#
+b#
+a <- 100*b^2#
+a#
+#
+plot(b_grid,median)#
+abline(v=b)#
+```#
+#
+```{r}#
+lambda <- rgamma(10000000,a,b)#
+hist(lambda,breaks=100)#
+#
+var(lambda)#
+mean(lambda>75)#
+```
+ham=51/70
+mad=14/70
+jay=5/70
+ham_1=3.24/1000
+mad_1=0.23/1000
+jay_1=5.61/1000
+y=7
+n=10000
+(ham*dbinom(y,n,ham_1))/(sum(ham*dbinom(y,n,ham_1),mad*dbinom(y,n,mad_1),jay*dbinom(y,n,jay_1)))
+7/10000
+a <- seq(0.1,1,0.1)
+for(i in a){print(a)}
+for(i in 1:a){print(a)}
+foreach(i in a){print(a)}
+for(i in a){print(a[i])}
+?foreach
+n1 <- 2820#
+y1 <- 563#
+n2 <- 20#
+y2 <- 10
+S <- 100000#
+a1<-b1<-a2<-b2 <- seq(0.1,1,0.1)#
+#
+for(i in 1:length(a1)){#
+  theta1 <- rbeta(S,y1+a1[i],(n1-y1+b1[i]))#
+  theta2 <- rbeta(S,y2+a2[i],(n2-y2+b2[i]))#
+  mean(theta2>theta1)#
+}
+theta1 <- rbeta(S,y1+a1[i],(n1-y1+b1[i]))
+theta2 <- rbeta(S,y2+a2[i],(n2-y2+b2[i]))
+for (i in 1:length(theta1)){mean(theta2[i]>theta1[i])}
+length(theta1)
+mean(theta1)
+mean(theta2>theta1)
+a1
+library(rjags)
+setwd("~/Documents/bayesian-portfolio/")
+##########################################################################################################################
+#
+#############         THIS FILE READS IN DATA AND MODELS STOCK RETURNS USINGS A RANDOM WALK       ##############
+##########################################################################################################################
+##########################################################################################################################
+# SET WORKING DIRECTORY#
+#
+setwd("~/Documents/bayesian-portfolio/")#
+##########################################################################################################################
+# SOURCE DATA#
+#
+source('./data.R')#
+# Multivariate Random walk for model for fitting daily stock returns.#
+S <- 10000#
+N <- nrow(daily_return)#
+C <- ncol(daily_return)#
+#
+stocks_rw <- list()#
+# Data #
+X <- daily_return[1:(N-1),]#
+Y <- daily_return[2:N,]#
+n <- nrow(Y)#
+#
+# Initial values#
+mu <- colMeans(Y-X)#
+covmat <- cov(Y-X)#
+#
+# Priors#
+mu0 <- rep(0,C)#
+tau <- 10#
+V <- diag(C)/tau#
+#
+P_Y <- matrix(NA,n,C)#
+#
+avg_errors <- matrix(S,n,C)#
+for(s in 1:S){#
+  P <- (1/n)*covmat + V#
+  for (t in 1:n){#
+    P_Y[t,] <- rmvnorm(1,X[t,],P)#
+  }#
+  epsilon <- Y - P_Y#
+  avg_errors <- colMeans(epsilon)#
+  colnames(epsilon) <- colnames(X)#
+  covmat2 <- cov(epsilon)#
+  covmat <- rinvwishart(n-C, covmat2)#
+  stocks_rw[[s]] <- list(P_Y = P_Y, covmat = covmat)#
+}
+N

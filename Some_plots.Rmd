@@ -1,0 +1,136 @@
+---
+title: "Plots"
+author: "Chris Hooks"
+date: "4/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Plot the prices
+```{r}
+X <- as.data.frame(daily_close)
+#X[,1] <- as.Date.character(X[,1],format = c("%Y-%m-%d"))
+n <- nrow(X)
+k <- ncol(X)
+# Stock names
+line_labels <- colnames(X)
+```
+
+```{r}
+# Line plots of daily prices
+
+plot(NA, xlim = c(X[1,1], X[n,1]+60), ylim = range(X[,2:k]),
+     main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
+for (i in 2:7){
+  lines(X[,1], X[,i], col= i)
+  x <- round(max(X[,1]) + runif(1,0, 45),0)
+  #x2 <- ifelse(length(which(X[,1]==x))==0,which(X[,1]==(x+3)),which(X[,1]==x))
+  #y <- ifelse(is.null(X[x2,i]+10),X[x2+3,i],X[x2,i])
+  y <- X[n,i]
+  text(x, y, labels = line_labels[i], cex=.6, col = 1)
+}
+
+#legend("topleft", line_labels[2:k], col = 2:k, lty = 1)
+```
+
+```{r}
+
+```
+
+
+```{r}
+# Plot the logged prices
+X <- daily_close
+X[,2:k] <- log(daily_close[,2:k])
+
+plot(NA, xlim = c(X[1,1], X[n,1]+60), ylim = range(X[,2:k]),
+     main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
+for (i in 2:7){
+  lines(X[,1], X[,i], col= i)
+  x <- round(max(X[,1]) + runif(1,0, 45),0)
+  #x2 <- ifelse(length(which(X[,1]==x))==0,which(X[,1]==(x+3)),which(X[,1]==x))
+  #y <- ifelse(is.null(X[x2,i]+10),X[x2+3,i],X[x2,i])
+  y <- X[n,i]
+  text(x, y, labels = line_labels[i], cex=.6, col = 1)
+}
+
+#legend("topleft", line_labels[2:k], col = 2:k, lty = 1)
+```
+
+```{r}
+# Plot the first difference of price
+X <- daily_close
+X[2:n,2:k] <- X[2:n,2:k]-X[1:n-1,2:k]
+X <- X[2:n,]
+n <- nrow(X)
+
+plot(NA, xlim = c(X[1,1], X[n,1]+60), ylim = range(X[,2:k]),
+     main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
+for (i in 2:7){
+  lines(X[,1], X[,i], col= i)
+  #x <- round(max(X[,1]) + runif(1,0, 45),0)
+  #x2 <- ifelse(length(which(X[,1]==x))==0,which(X[,1]==(x+3)),which(X[,1]==x))
+  #y <- ifelse(is.null(X[x2,i]+10),X[x2+3,i],X[x2,i])
+  #y <- X[n,i]
+  #text(x, y, labels = line_labels[i], cex=.6, col = 1)
+}
+
+legend("topright", line_labels[2:k], col = 2:k, lty = 1, bty="n", cex = 0.6)
+```
+
+```{r}
+# Plot the logged first difference of price
+X <- daily_close
+n <- nrow(X)
+X[,2:k] <- log(daily_close[,2:k])
+X[2:n,2:k] <- X[2:n,2:k]-X[1:n-1,2:k]
+X <- X[2:n,]
+n <- nrow(X)
+
+plot(NA, xlim = c(X[1,1], X[n,1]+60), ylim = range(X[,2:k]),
+     main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
+for (i in 2:7){
+  lines(X[,1], X[,i], col= i)
+  #x <- round(max(X[,1]) + runif(1,0, 45),0)
+  #x2 <- ifelse(length(which(X[,1]==x))==0,which(X[,1]==(x+3)),which(X[,1]==x))
+  #y <- ifelse(is.null(X[x2,i]+10),X[x2+3,i],X[x2,i])
+  #y <- X[n,i]
+  #text(x, y, labels = line_labels[i], cex=.6, col = 1)
+}
+
+legend("topright", line_labels[2:k], col = 2:k, lty = 1, bty="n", cex = 0.6)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

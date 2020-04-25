@@ -16,7 +16,7 @@ library(data.table)
 
 
 ```{r}
-df <- read.csv("~/Documents/bayes_portfolio/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
+df <- read.csv("./sample.csv", stringsAsFactors = FALSE)
 df$date <- as.Date(df$datetime)
 
 justone <- df[df$symbol == 'PRTA',]
@@ -37,7 +37,7 @@ justone
 ```
 
 ```{r}
-sample <- read.csv("~/Documents/bayes_portfolio/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
+sample <- read.csv("./sample.csv", stringsAsFactors = FALSE)
 sample$date <- as.Date(sample$datetime)
 sample$symbol <- as.factor(sample$symbol)
 
