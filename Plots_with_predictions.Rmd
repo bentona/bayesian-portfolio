@@ -12,20 +12,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 #Only run if data is not already loaded                                             BEWARE BEFORE RUNNING
 
-source('./models_draft_2.R')
-source('./Predictions.R')
+#source('./models_draft_2.R')
+#source('./Predictions.R')
 ```
 
 ```{r}
 # Stock data
 X <- as.data.frame(daily_close[1000:(nrow(daily_close)-T),])
-#X[,1] <- as.Date.character(X[,1],format = c("%Y-%m-%d"))
+X2 <- as.data.frame(daily_close[(nrow(daily_close)-T+1):nrow(daily_close),])
 n <- nrow(X)
 k <- ncol(X)
 # Stock names
 line_labels <- colnames(X)
 
 F <- as.data.frame(forecast)
+F$for_period <- daily_close[(nrow(daily_close)-T):nrow(daily_close),1]
 ```
 
 
@@ -35,21 +36,24 @@ plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = c(min(X[,2:k]),max(X[,2:k])*1.1),
 #plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = range(X[,2:k]),
      main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
 for (i in 2:c){
+  # Plot the data
   lines(X[,1], X[,i], col= i)
   x <- round(max(X[,1]) + runif(1,0, 45),0)
   y <- X[n,i]
   text(x, y, labels = line_labels[i], cex=.6, col = i)
   
-  lines((X[n,1]+for_period),F[,i], lty=3, col=i, lwd=1)
-  lines((X[n,1]+for_period),F[,i+c], lty=1, col="lightgray", lwd=2)
-  lines((X[n,1]+for_period),F[,i+2*c], lty=1, col="lightgray", lwd=2)
+  # plot the predictions with credible intervals
+  lines(F[,1],F[,i], lty=3, col=i, lwd=1)
+  lines(F[,1],F[,i+c], lty=1, col="lightgray", lwd=2)
+  lines(F[,1],F[,i+2*c], lty=1, col="lightgray", lwd=2)
+  
+  # Plot the actual data during the forecast window
+  lines(X2[,1],X2[,i], lty=1, col="black")
+  
 }
 ```
 
-```{r}
-plot(X[,1],X[,2], type="l", xlim = c(min(X[,1]), max(X[,1])+90))
-plot((X[n,1]+period), forecast[,2], type = "l")
-```
+
 
 
 

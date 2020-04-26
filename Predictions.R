@@ -1,4 +1,4 @@
-######### Predict one period into future using random walk model
+######### Predict multiple periods into future using random walk model
 
 S <- nrow(stocks_rw)
 burn <- 15000  # number of samples to drop for burn in
