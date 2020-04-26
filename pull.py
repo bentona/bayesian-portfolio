@@ -8,10 +8,8 @@ from random import sample
 import settings
 
 # for training we only want symbols with ~5 yrs of data
-#MIN_ROWS = 1250
+MIN_ROWS = 1250
 
-# for testing we don't care, just want to make sure the ticker didn't change
-MIN_ROWS = 1
 
 def fetch_range(symbol, start, end):
     params = {
@@ -34,21 +32,22 @@ def request(endpoint, params):
     print("DEBUG: Request: " + r.url)
     return r.json()
 
-def to_df(results, symbol):
+def to_df(results, symbol, minimum=False):
+    min_rows = MIN_ROWS if minimum else 0
     if results.get('s') == 'no_data':
         print(f'skipping {symbol}, no data')
         return pd.DataFrame()
-    if len(results.get('c')) < MIN_ROWS:
+    if len(results.get('c')) < min_rows:
         print(f'skipping {symbol}, low data')
         return pd.DataFrame()
     data = {
-        'low': results.get('l')[-MIN_ROWS:],
-        'high': results.get('h')[-MIN_ROWS:],
-        'open': results.get('o')[-MIN_ROWS:],
-        'close': results.get('c')[-MIN_ROWS:],
-        'volume': results.get('v')[-MIN_ROWS:],
-        'timestamp': results.get('t')[-MIN_ROWS:],
-        'datetime': pd.to_datetime(results.get('t')[-MIN_ROWS:], unit='s'),
+        'low': results.get('l')[-min_rows:],
+        'high': results.get('h')[-min_rows:],
+        'open': results.get('o')[-min_rows:],
+        'close': results.get('c')[-min_rows:],
+        'volume': results.get('v')[-min_rows:],
+        'timestamp': results.get('t')[-min_rows:],
+        'datetime': pd.to_datetime(results.get('t')[-min_rows:], unit='s'),
         'symbol': symbol
     }
     return pd.DataFrame(data=data)
@@ -56,17 +55,16 @@ def to_df(results, symbol):
 def all_symbols():
     return request('stock/symbol', {'exchange': 'US'})
 
-def fetch_range_for_symbols(start, end, symbols):
-    dfs = [ to_df(fetch_range(symbol=symbol, start=start, end=end), symbol=symbol) for symbol in symbols]
+def fetch_range_for_symbols(start, end, symbols, minimum=False):
+    dfs = [ to_df(fetch_range(symbol=symbol, start=start, end=end), symbol=symbol, minimum=minimum) for symbol in symbols]
     return pd.concat(dfs)
-
 
 
 def random_sample(n):
     start = '01-01-2000'
     end = '01-01-2020'
     symbols = [ r['symbol'] for r in sample(all_symbols(), n) ]
-    return fetch_range_for_symbols(start, end, symbols)
+    return fetch_range_for_symbols(start, end, symbols, minimum=True)
 
 def run(args):
     try:
@@ -80,6 +78,6 @@ def run(args):
 
 
 
-#random_sample(15).to_csv('sample_new.csv')
+#random_sample(20).to_csv('sample_new.csv')
 
-#run(sys.argv).to_csv('test_new.csv')
+run(sys.argv).to_csv('test_14.csv')

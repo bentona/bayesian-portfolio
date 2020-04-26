@@ -68,7 +68,7 @@ normalized_portfolio <- portfolio_to_test/sum(portfolio_to_test)
 
 
 
-test_sample <- load_data(filename='./test_11.csv')
+test_sample <- load_data(filename='./test_6.csv')
 
 stock_values <- test_forward(normalized_portfolio, test_sample)
 
