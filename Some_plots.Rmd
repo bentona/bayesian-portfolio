@@ -21,11 +21,13 @@ for (i in 1:ncol(samples)){
 # Plot the posterior predictive samples
 # This code will plot things like:
 #  pred_Y[[1:T]]$log[,i], where T is the number of prediction periods
-#  pred_Y[[1:T]]$price[,i], where $price is the actual dollar value. The log is the log price
+
+df <- as.data.frame(pred_Y[[1]]$log)
+cname <- colnames(df)
 
 for (i in 1:c){
-  hist(pred_Y[[1]]$price[,i],breaks = 100)
-  abline(v=mean(pred_Y[[1]]$price[,i]), col="red",lwd=1.5)
+  hist(exp(df[,i]),breaks = 100, xlab = cname[i], main = paste("Histogram of", cname[i]))
+  abline(v=exp(mean(df[,i])), col="red",lwd=1.5)
 }
 ```
 
