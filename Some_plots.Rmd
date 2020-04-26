@@ -9,10 +9,34 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+ylab <- colnames(samples)
+for (i in 1:ncol(samples)){
+  plot(1:nrow(samples), samples[,i], xlab = "Iteration", ylab = ylab[i], type="l")
+  hist(samples[,i], breaks=100)
+}
+```
+
+```{r}
+# Plot the posterior predictive samples
+# This code will plot things like:
+#  pred_Y[[1:T]]$log[,i], where T is the number of prediction periods
+
+df <- as.data.frame(pred_Y[[1]]$log)
+cname <- colnames(df)
+
+for (i in 1:c){
+  hist(exp(df[,i]),breaks = 100, xlab = cname[i], main = paste("Histogram of", cname[i]))
+  abline(v=exp(mean(df[,i])), col="red",lwd=1.5)
+}
+```
+
+
 
 # Plot the prices
 ```{r}
 X <- as.data.frame(daily_close)
+X <- X[1:(nrow(daily_close)-T),]
 #X[,1] <- as.Date.character(X[,1],format = c("%Y-%m-%d"))
 n <- nrow(X)
 k <- ncol(X)

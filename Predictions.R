@@ -1,7 +1,7 @@
-######### Predict one period into future using random walk model
+######### Predict multiple periods into future using random walk model
 
 S <- nrow(stocks_rw)
-burn <- 5000  # number of samples to drop for burn in
+burn <- 15000  # number of samples to drop for burn in
 N <- nrow(daily_close)
 C <- ncol(daily_close)
 
@@ -19,6 +19,8 @@ Y <- Y[(n-20):n,]
 
 # Drop first 5000 for burnin
 samples <- stocks_rw[burn:S,]
+S <- nrow(samples)
+k <- ncol(samples)
 
 # Samples to keep
 E_value <- colMeans(samples)
@@ -30,28 +32,68 @@ E_return <- E_value[1:c]
 covar <- matrix(E_value[(c+1):length(E_value)],c,c, dimnames = list(stock_names,stock_names))
 
 
-# Create a sample space
-S <- 1000000 # number of samples to take
+# Number of time periods to predict
+T <- 45   
 
-pred_Y <- matrix(NA,S,c)
+# Prediction list
+pred_Y <- list()
 
-pred_Y <- X[1,] + rmvnorm(S,E_return, covar)
-
-pred_sum <- summary(pred_Y)
-pred_range <- quantile(pred_Y[,1], c(0.025,0.5,0.975))
-
-pred_error <- Y[1,] - colMeans(pred_Y)
-
+# Generate predictions
+x <- X[1,]
+E_ln_price <- matrix(NA,S,c)
+colnames(E_ln_price) <- stock_names
+for (t in 1:T){
+  for(s in 1:S){
+    e_return <- samples[s,1:c]
+    covar2 <- matrix(samples[s,(c+1):k],c,c)
+    E_ln_price[s,] <- x + rmvnorm(1,e_return,covar2)
+  }
+  pred_Y[[t]] <- list(log=E_ln_price, last_price = x)
+  x <- colMeans(E_ln_price)
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+}  
 
 
+
+
+# Create forecast for plotting
+forecast <- matrix(NA, T, c*3)
+
+for (t in 1:T){
+  forecast[t,1:c] <- colMeans(pred_Y[[t]]$log)
+  for (j in 1:c){
+   forecast[t,j+c] <- quantile(pred_Y[[t]]$log[,j],c(0.025))
+   forecast[t,j+2*c] <- quantile(pred_Y[[t]]$log[,j],c(0.975))
+  }
+}
+  
+forecast <- rbind(pred_Y[[1]]$last_price, forecast)  # This inserts actual last price as initial forcast point for plotting
+
+
+# Name forecast columns
+names2 <- NULL
+
+for (i in 1:c){
+  names2[i] <- stock_names[i]
+  names2[c+i] <- paste0(stock_names[i], "_025")
+  names2[2*c+i] <- paste0(stock_names[i], "_975")
+}
+
+# Add colnames
+colnames(forecast) <- c(names2)
+
+
+# Create log and non-log forecast
+log_forecast <- forecast
+
+forecast <- exp(forecast)
+
+# Create a time period tracker
+for_period <- 0:T+1
+
+log_forecast <- cbind(for_period, log_forecast)
+forecast <- cbind(for_period, forecast)
+
+
+#View(forecast)  
+#View(log_forecast)  

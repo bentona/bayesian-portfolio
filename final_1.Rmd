@@ -10,6 +10,16 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(rjags)
+<<<<<<< HEAD
+library(magrittr)
+library(tidyverse)
+library(data.table)
+library(LaplacesDemon)
+```
+
+```{r}
+sample <- read.csv("~/Documents/bayesian-portfolio/sample.csv", stringsAsFactors = FALSE)
+=======
 library(data.table)
 library(tidyverse)
 library(LaplacesDemon)
@@ -18,6 +28,7 @@ library(mvtnorm)
 
 ```{r}
 sample <- read.csv("./sample.csv", stringsAsFactors = FALSE)
+>>>>>>> master
 sample$date <- as.Date(sample$datetime)
 sample$symbol <- as.factor(sample$symbol)
 
@@ -25,6 +36,10 @@ justone <- sample[sample$symbol == 'PRTA',]
 justone <- justone[1:200,]
 
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> master
 add_return_pct <- function(x, y){
   df <- x
   df$close_30_ago = NA
@@ -64,8 +79,11 @@ stock_returns <- na.omit(stock_returns)
 ```
 
 ```{r}
+<<<<<<< HEAD
+=======
 #### THIS IS NOT BEING USED RIGHT NOW###############################################
 
+>>>>>>> master
 # Some random parameters
 T <- nrow(stock_returns)
 N <- ncol(stock_returns[,drop(-1)])
@@ -104,6 +122,8 @@ scale <- diag(N)
 # Prior for covariance matrix
 cov_prior <- rinvwishart(df,scale)
 ```
+<<<<<<< HEAD
+=======
 
 
 
@@ -405,13 +425,18 @@ for (i in 1:ncol(samples)){
 
 
 Model 1
+>>>>>>> master
 ```{r}
 # Portfolio returns
 
 model_1_string <- textConnection("model{
 # Priors
 for (i in 1:N){
+<<<<<<< HEAD
+  mu[i] ~ dnorm(0,0.01)
+=======
   mu[i] ~ dnorm(0,0.1)
+>>>>>>> master
 }
 Omega[1:N,1:N] ~ dwish(scale[,],df)
 asset_returns ~ dmnorm(mu[], Omega[,])
@@ -427,7 +452,10 @@ for (i in 2:T){
   stock_returns[i,1:N] ~ dmnorm(pred_ret[i,1:N], Omega[,])
   pred_port_ret[i] <- inprod(stock_returns[i,1:N],w)
   port_ret[i] ~ dnorm(pred_port_ret[i], tau_p)
+<<<<<<< HEAD
+=======
   
+>>>>>>> master
 }
 }")
 
@@ -451,6 +479,24 @@ View(test)
 ```
 
 
+<<<<<<< HEAD
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+=======
 Model 2
 ```{r}
 # Portfolio returns
@@ -518,6 +564,7 @@ cor(PriceA[2:N], PriceA[1:N-1])
 plot(stockA[2:N], stockA[1:N-1])
 cor(stockA[2:N],stockA[1:N-1])
 ```
+>>>>>>> master
 
 
 
