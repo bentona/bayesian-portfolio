@@ -1,7 +1,7 @@
 source('./data.R')
 source('./optimize_test.R')
 
-sample <- load_data('./sample_11.csv')
+sample <- load_data('./sample_14.csv')
 by_symbol <- group_by_symbol(sample)
 daily_return <- daily_returns(by_symbol)
 
@@ -68,7 +68,7 @@ normalized_portfolio <- portfolio_to_test/sum(portfolio_to_test)
 
 
 
-test_sample <- load_data(filename='./test_6.csv')
+test_sample <- load_data(filename='./test_14.csv')
 
 stock_values <- test_forward(normalized_portfolio, test_sample)
 
