@@ -32,15 +32,15 @@ F$for_period <- daily_close[(nrow(daily_close)-T):nrow(daily_close),1]
 
 
 ```{r}
-plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = c(min(X[,2:k]),max(X[,2:k])*1.1),
+plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = c(min(X[,2:k]),max(F[,(2*c):(3*c)])*1.1),
 #plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = range(X[,2:k]),
      main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
-for (i in 2:c){
+for (i in 2:k){
   # Plot the data
   lines(X[,1], X[,i], col= i)
   x <- round(max(X[,1]) + runif(1,0, 45),0)
   y <- X[n,i]
-  text(x, y, labels = line_labels[i], cex=.6, col = i)
+  text(x, y, labels = line_labels[i], cex=.6, col = "blue")
   
   # plot the predictions with credible intervals
   lines(F[,1],F[,i], lty=3, col=i, lwd=1)
