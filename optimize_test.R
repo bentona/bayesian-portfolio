@@ -20,7 +20,7 @@ optimize <- function(model_mu, model_cov, guess_w){
 
 
 test_forward <- function(portfolio, forward_sample){
-  test_by_symbol <- group_by_symbol(test_sample)
+  test_by_symbol <- group_by_symbol(forward_sample)
   test_daily_return <- daily_returns(test_by_symbol)
   
   stock_values <- matrix(ncol=length(portfolio), nrow=nrow(test_daily_return))

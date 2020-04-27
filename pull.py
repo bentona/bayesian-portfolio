@@ -78,6 +78,6 @@ def run(args):
 
 
 
-#random_sample(20).to_csv('sample_new.csv')
+#random_sample(40).to_csv('sample_new.csv')
 
-run(sys.argv).to_csv('test_14.csv')
+run(sys.argv).to_csv('test_27.csv')
