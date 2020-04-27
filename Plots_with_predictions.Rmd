@@ -26,8 +26,8 @@ T <- 45
 ```{r}
 #Only run if data is not already loaded                                             BEWARE BEFORE RUNNING
 
-source('./model_rw.R')
-source('./Predictions_rw.R')
+#source('./model_rw.R')
+#source('./Predictions_rw.R')
 ```
 
 ```{r}
@@ -135,17 +135,19 @@ for (i in 2:k){
 ```
 
 ```{r}
-yaxis <- c(max(X[,2:k]), max(F[,(2*c):(3*c)]))
-
+# Set filename
 png(filename = "~/Desktop/stock_price_pred_14_all.png",
     width = 700, height = 400)
-plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = c(min(X[,2:k]),yaxis[which.max(yaxis)]*1.05),
+
+
+yaxis <- c(max(X3[,2:k]), max(F[,(2*c):(3*c)]))
+plot(NA, xlim = c(X3[1,1], X3[n3,1]+90), ylim = c(min(X3[,2:k]),yaxis[which.max(yaxis)]*1.05),
      main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
 for (i in 2:k){
   # Plot the data
-  lines(X[,1], X[,i], col= i)
-  x <- round(max(X[,1]) + runif(1,0, 45),0)
-  y <- X[n,i]
+  lines(X3[,1], X3[,i], col= i)
+  x <- round(max(X3[,1]) + runif(1,0, 45),0)
+  y <- X3[n3,i]
   
   # plot the predictions with credible intervals
   lines(F[,1],F[,i], lty=3, col=i, lwd=1)
@@ -168,14 +170,6 @@ dev.off()
 
 # Number of periods to display
 periods <- 200
-
-X3 <- as.data.frame(daily_close[(nrow(daily_close)-periods):(nrow(daily_close)-T),])
-n3 <- nrow(X3)
-
-# Save graph to image file
-
-png(filename = "~/Desktop/stock_price_pred_14_200.png",
-    width = 700, height = 400)
 
 yaxis <- c(max(X3[,2:k]), max(F[,(2*c):(3*c)]))
 plot(NA, xlim = c(X3[1,1], X3[n3,1]+90), ylim = c(min(X3[,2:k]),yaxis[which.max(yaxis)]*1.05),
