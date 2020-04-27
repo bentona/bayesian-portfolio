@@ -10,10 +10,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+# Set the work directory
+setwd("~/Documents/bayesian-portfolio/")
+```
+
+```{r}
 #Only run if data is not already loaded                                             BEWARE BEFORE RUNNING
 
 # Define filename for selected sample
-file = "sample_14.csv"
+# number of stocks
+stocks <- 6
+
+file = paste0("sample_",stocks,".csv")
 
 # Define the sample size for GIBBS
 S <- 60000
@@ -26,8 +34,8 @@ T <- 45
 ```{r}
 #Only run if data is not already loaded                                             BEWARE BEFORE RUNNING
 
-#source('./model_rw.R')
-#source('./Predictions_rw.R')
+source('./model_rw.R')
+source('./Predictions_rw.R')
 ```
 
 ```{r}
@@ -136,7 +144,7 @@ for (i in 2:k){
 
 ```{r}
 # Set filename
-png(filename = "~/Desktop/stock_price_pred_14_all.png",
+png(filename = paste0("~/Desktop/stock_price_pred_",stocks,"_.png"),
     width = 700, height = 400)
 
 
@@ -170,6 +178,11 @@ dev.off()
 
 # Number of periods to display
 periods <- 200
+
+# Set filename
+png(filename = paste0("~/Desktop/stock_price_pred_",stocks,"_",periods,".png"),
+    width = 700, height = 400)
+
 
 yaxis <- c(max(X3[,2:k]), max(F[,(2*c):(3*c)]))
 plot(NA, xlim = c(X3[1,1], X3[n3,1]+90), ylim = c(min(X3[,2:k]),yaxis[which.max(yaxis)]*1.05),
