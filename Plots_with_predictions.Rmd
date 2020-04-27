@@ -12,27 +12,55 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 #Only run if data is not already loaded                                             BEWARE BEFORE RUNNING
 
-#source('./models_draft_2.R')
-#source('./Predictions.R')
+# Define filename for selected sample
+file = "sample_14.csv"
+
+# Define the sample size for GIBBS
+S <- 60000
+burn <- 15000
+
+# Define the number of periods to predict for
+T <- 45
+```
+
+```{r}
+#Only run if data is not already loaded                                             BEWARE BEFORE RUNNING
+
+source('./model_rw.R')
+source('./Predictions_rw.R')
 ```
 
 ```{r}
 # Stock data
-X <- as.data.frame(daily_close[1:(nrow(daily_close)-T),])
-X2 <- as.data.frame(daily_close[(nrow(daily_close)-T+1):nrow(daily_close),])
+X <- as.data.frame(daily_close_func(group_by_symbol(load_data(file))))
+
+F <- as.data.frame(forecast)
+F$for_period <- X[(nrow(X)-T):nrow(X),1]
+
+X2 <- X[(nrow(X)-T):nrow(X),]
+X <- X[1:(nrow(X)-T),]
+
 n <- nrow(X)
 k <- ncol(X)
 # Stock names
 line_labels <- colnames(X)
 
-F <- as.data.frame(forecast)
-F$for_period <- daily_close[(nrow(daily_close)-T):nrow(daily_close),1]
+
+# Reduced time frame
+
+# Number of periods to display
+periods <- 200
+
+X3 <- X[(n-periods):n,]
+n3 <- nrow(X3)
+
 ```
 
 
 
 ```{r}
 yaxis <- c(max(X[,2:k]), max(F[,(2*c):(3*c)]))
+
 plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = c(min(X[,2:k]),yaxis[which.max(yaxis)]*1.05),
      main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
 for (i in 2:k){
@@ -53,16 +81,10 @@ for (i in 2:k){
   text(x, y, labels = line_labels[i], cex=.6, col = "blue")
   
 }
+
 ```
 
 ```{r}
-# Reduced time frame
-
-# Number of periods to display (not including predictions)
-periods <- 200
-
-X3 <- as.data.frame(daily_close[(nrow(daily_close)-periods):(nrow(daily_close)-T),])
-n3 <- nrow(X3)
 
 yaxis <- c(max(X3[,2:k]), max(F[,(2*c):(3*c)]))
 plot(NA, xlim = c(X3[1,1], X3[n3,1]+90), ylim = c(min(X3[,2:k]),yaxis[which.max(yaxis)]*1.05),
@@ -85,6 +107,98 @@ for (i in 2:k){
   text(x, y, labels = line_labels[i], cex=.6, col = "blue")
   
 }
+```
+
+```{r}
+yaxis <- c(max(X[,2:k]), max(F[,(2*c):(3*c)]))
+
+plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = c(min(X[,2:k]),yaxis[which.max(yaxis)]*1.05),
+     main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
+for (i in 2:k){
+  # Plot the data
+  lines(X[,1], X[,i], col= i)
+  x <- round(max(X[,1]) + runif(1,0, 45),0)
+  y <- X[n,i]
+  
+  # plot the predictions with credible intervals
+ # lines(F[,1],F[,i], lty=3, col=i, lwd=1)
+ # lines(F[,1],F[,i+c], lty=1, col="lightgray", lwd=2)
+ # lines(F[,1],F[,i+2*c], lty=1, col="lightgray", lwd=2)
+  
+  # Plot the actual data during the forecast window
+  lines(X2[,1],X2[,i], lty=1, col="black")
+  
+  # Add text labels to the lines
+  text(x, y, labels = line_labels[i], cex=.6, col = "blue")
+  
+}
+```
+
+```{r}
+yaxis <- c(max(X[,2:k]), max(F[,(2*c):(3*c)]))
+
+png(filename = "~/Desktop/stock_price_pred_14_all.png",
+    width = 700, height = 400)
+plot(NA, xlim = c(X[1,1], X[n,1]+90), ylim = c(min(X[,2:k]),yaxis[which.max(yaxis)]*1.05),
+     main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
+for (i in 2:k){
+  # Plot the data
+  lines(X[,1], X[,i], col= i)
+  x <- round(max(X[,1]) + runif(1,0, 45),0)
+  y <- X[n,i]
+  
+  # plot the predictions with credible intervals
+  lines(F[,1],F[,i], lty=3, col=i, lwd=1)
+  lines(F[,1],F[,i+c], lty=1, col="lightgray", lwd=2)
+  lines(F[,1],F[,i+2*c], lty=1, col="lightgray", lwd=2)
+  
+  # Plot the actual data during the forecast window
+  lines(X2[,1],X2[,i], lty=1, col="black")
+  
+  # Add text labels to the lines
+  text(x, y, labels = line_labels[i], cex=.6, col = "blue")
+  
+}
+
+dev.off()
+```
+
+```{r}
+# Reduced time frame
+
+# Number of periods to display
+periods <- 200
+
+X3 <- as.data.frame(daily_close[(nrow(daily_close)-periods):(nrow(daily_close)-T),])
+n3 <- nrow(X3)
+
+# Save graph to image file
+
+png(filename = "~/Desktop/stock_price_pred_14_200.png",
+    width = 700, height = 400)
+
+yaxis <- c(max(X3[,2:k]), max(F[,(2*c):(3*c)]))
+plot(NA, xlim = c(X3[1,1], X3[n3,1]+90), ylim = c(min(X3[,2:k]),yaxis[which.max(yaxis)]*1.05),
+     main ="Stock Prices", xlab="Date", ylab = "Price", type = "n")
+for (i in 2:k){
+  # Plot the data
+  lines(X3[,1], X3[,i], col= i)
+  x <- round(max(X3[,1]) + runif(1,0, 45),0)
+  y <- X3[n3,i]
+  
+  # plot the predictions with credible intervals
+  lines(F[,1],F[,i], lty=3, col=i, lwd=1)
+  lines(F[,1],F[,i+c], lty=1, col="lightgray", lwd=2)
+  lines(F[,1],F[,i+2*c], lty=1, col="lightgray", lwd=2)
+  
+  # Plot the actual data during the forecast window
+  lines(X2[,1],X2[,i], lty=1, col="black")
+  
+  # Add text labels to the lines
+  text(x, y, labels = line_labels[i], cex=.6, col = "blue")
+  
+}
+dev.off()
 ```
 
 

@@ -21,32 +21,29 @@
 
 # SOURCE DATA
 
-#source('./data_1.R')
+source('./def_functions.R')
+
+# Define filename for selected sample
+#file = "sample_14.csv"
+
+# Get log closing price
+X <- log_close(daily_close_func(group_by_symbol(load_data(file))))
 
 
 # Multivariate Random walk for model for fitting daily stock returns.
-S <- 100000
-N <- nrow(daily_close)
-C <- ncol(daily_close)
-
-for_pred <- 20        # Number of values to keep for prediction
+#S <- 100000
 
 
+#T <- 45        # Number of values to keep for prediction
 
-# Data 
-X <- log(daily_close[1:(N-1),2:C])
-Y <- log(daily_close[2:N,2:C])
-
-stock_names <- colnames(X)
-n <- nrow(Y)
-c <- ncol(Y)
-
-X <- X[1:(n-for_pred),]
-Y <- Y[1:(n-for_pred),]
 
 # Let Y take the value of the first difference
-Y <- Y-X
+Y <- first_dif_func(X)
+Y <- Y[1:(nrow(Y)-T),2:ncol(Y)]
 
+stock_names <- colnames(Y)
+n <- nrow(Y)
+c <- ncol(Y)
 
 # Space for samples
 stocks_rw <- matrix(NA,S,c+c*c)
